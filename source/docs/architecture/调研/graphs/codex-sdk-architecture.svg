@@ -1,0 +1,153 @@
+<svg width="100%" viewBox="0 0 760 800" role="img" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, system-ui, 'Segoe UI', sans-serif">
+  <title>Codex SDK 与 Codex CLI 的实现拓扑</title>
+  <desc>展示 Codex SDK / Codex CLI / 其他客户端如何通过 Codex App Server（双向 JSON-RPC 2.0）共享 Codex Harness。与 claude-agent-sdk-architecture.svg 配对参照。</desc>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="rgb(115,114,108)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- 顶部标题 -->
+  <text x="380" y="26" text-anchor="middle" font-size="15" font-weight="600" fill="rgb(40,40,40)">Codex SDK 与 Codex CLI 的实现拓扑</text>
+  <text x="380" y="44" text-anchor="middle" font-size="11" fill="rgb(95,94,90)">所有客户端通过 Codex App Server（JSON-RPC 2.0）共享同一个 Codex Harness</text>
+
+  <!-- Layer 1: 多种入口 -->
+  <!-- 1a: Terminal user -->
+  <g>
+    <rect x="40" y="62" width="220" height="84" rx="12" fill="rgb(225,245,238)" stroke="rgb(15,110,86)" stroke-width="0.6"/>
+    <text x="150" y="92" text-anchor="middle" font-size="13.5" font-weight="500" fill="rgb(8,80,65)">Terminal user</text>
+    <text x="150" y="114" text-anchor="middle" font-size="11" fill="rgb(15,110,86)">人类在终端启动 codex</text>
+    <text x="150" y="132" text-anchor="middle" font-size="11" fill="rgb(15,110,86)">交互式 / 非交互式</text>
+  </g>
+
+  <!-- 1b: Your application code -->
+  <g>
+    <rect x="276" y="62" width="220" height="84" rx="12" fill="rgb(225,245,238)" stroke="rgb(15,110,86)" stroke-width="0.6"/>
+    <text x="386" y="92" text-anchor="middle" font-size="13.5" font-weight="500" fill="rgb(8,80,65)">Your application code</text>
+    <text x="386" y="114" text-anchor="middle" font-size="11" fill="rgb(15,110,86)">Python / TypeScript</text>
+    <text x="386" y="132" text-anchor="middle" font-size="11" fill="rgb(15,110,86)">CI/CD · 后端服务</text>
+  </g>
+
+  <!-- 1c: Other clients -->
+  <g>
+    <rect x="512" y="62" width="208" height="84" rx="12" fill="rgb(225,245,238)" stroke="rgb(15,110,86)" stroke-width="0.6"/>
+    <text x="616" y="92" text-anchor="middle" font-size="13.5" font-weight="500" fill="rgb(8,80,65)">Other clients</text>
+    <text x="616" y="114" text-anchor="middle" font-size="11" fill="rgb(15,110,86)">VS Code 扩展</text>
+    <text x="616" y="132" text-anchor="middle" font-size="11" fill="rgb(15,110,86)">Web App · macOS Desktop</text>
+  </g>
+
+  <!-- Arrow 1a: Terminal user → codex CLI -->
+  <line x1="150" y1="146" x2="150" y2="184" stroke="rgb(115,114,108)" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="158" y="170" font-size="11" fill="rgb(61,61,58)">直接启动</text>
+
+  <!-- Arrow 1b: Your code → Codex SDK -->
+  <line x1="386" y1="146" x2="386" y2="184" stroke="rgb(115,114,108)" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="394" y="170" font-size="11" fill="rgb(61,61,58)">calls</text>
+
+  <!-- Arrow 1c: Other clients → 直接到 App Server -->
+  <line x1="616" y1="146" x2="616" y2="384" stroke="rgb(115,114,108)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+  <text x="624" y="240" font-size="11" fill="rgb(61,61,58)">JSON-RPC 2.0</text>
+
+  <!-- Layer 2a: codex CLI 调用模式 -->
+  <g>
+    <rect x="40" y="186" width="220" height="118" rx="12" fill="rgb(225,245,238)" stroke="rgb(15,110,86)" stroke-width="0.6" stroke-dasharray="3 2"/>
+    <text x="150" y="208" text-anchor="middle" font-size="12" font-weight="500" fill="rgb(8,80,65)">CLI 直接调用模式</text>
+    <text x="150" y="226" text-anchor="middle" font-size="10.5" fill="rgb(15,110,86)">codex 二进制启动后</text>
+    <text x="150" y="242" text-anchor="middle" font-size="10.5" fill="rgb(15,110,86)">内部驱动 Harness</text>
+    <text x="150" y="270" text-anchor="middle" font-size="10" fill="rgb(95,94,90)">（待核实：是否经由</text>
+    <text x="150" y="284" text-anchor="middle" font-size="10" fill="rgb(95,94,90)">同进程 App Server）</text>
+  </g>
+
+  <!-- Layer 2b: Codex SDK -->
+  <g>
+    <rect x="276" y="186" width="220" height="118" rx="12" fill="rgb(238,237,254)" stroke="rgb(83,74,183)" stroke-width="0.6"/>
+    <text x="386" y="208" text-anchor="middle" font-size="13.5" font-weight="500" fill="rgb(60,52,137)">Codex SDK</text>
+    <text x="386" y="226" text-anchor="middle" font-size="10.5" fill="rgb(83,74,183)">JSON-RPC 客户端库</text>
+
+    <!-- Python SDK 子框 -->
+    <rect x="288" y="238" width="96" height="56" rx="6" fill="white" stroke="rgb(83,74,183)" stroke-width="0.5"/>
+    <text x="336" y="256" text-anchor="middle" font-size="11" font-weight="500" fill="rgb(60,52,137)">Python SDK</text>
+    <text x="336" y="271" text-anchor="middle" font-size="10" fill="rgb(83,74,183)">实验性</text>
+    <text x="336" y="285" text-anchor="middle" font-size="10" fill="rgb(83,74,183)">JSON-RPC over stdio</text>
+
+    <!-- TypeScript SDK 子框 -->
+    <rect x="388" y="238" width="96" height="56" rx="6" fill="white" stroke="rgb(83,74,183)" stroke-width="0.5"/>
+    <text x="436" y="256" text-anchor="middle" font-size="11" font-weight="500" fill="rgb(60,52,137)">TypeScript SDK</text>
+    <text x="436" y="271" text-anchor="middle" font-size="10" fill="rgb(83,74,183)">@openai/codex-sdk</text>
+    <text x="436" y="285" text-anchor="middle" font-size="10" fill="rgb(83,74,183)">Node.js 18+</text>
+  </g>
+
+  <!-- Arrow 2a: CLI 模式 → Harness -->
+  <line x1="150" y1="304" x2="150" y2="500" stroke="rgb(115,114,108)" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#arrow)"/>
+  <text x="62" y="395" font-size="11" fill="rgb(61,61,58)">驱动同进程</text>
+  <text x="62" y="411" font-size="11" fill="rgb(61,61,58)">Harness</text>
+
+  <!-- Arrow 2b: SDK → App Server -->
+  <line x1="386" y1="304" x2="386" y2="384" stroke="rgb(115,114,108)" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="396" y="328" font-size="11" fill="rgb(61,61,58)">spawn local</text>
+  <text x="396" y="344" font-size="11" fill="rgb(61,61,58)">app-server 进程</text>
+  <text x="396" y="360" font-size="11" fill="rgb(61,61,58)">stdio JSON-RPC 2.0</text>
+
+  <!-- Layer 3: Codex App Server -->
+  <g>
+    <rect x="40" y="386" width="680" height="92" rx="12" fill="rgb(255,238,224)" stroke="rgb(180,100,40)" stroke-width="0.6"/>
+    <text x="380" y="410" text-anchor="middle" font-size="14" font-weight="600" fill="rgb(150,80,30)">Codex App Server</text>
+    <text x="380" y="430" text-anchor="middle" font-size="11" fill="rgb(180,100,40)">双向 JSON-RPC 2.0 · stdio JSONL · backward-compatible 协议</text>
+    <text x="380" y="450" text-anchor="middle" font-size="10.5" fill="rgb(180,100,40)">所有 Codex 客户端的统一接入点 · 顶层 primitives：Thread / Turn</text>
+    <text x="380" y="466" text-anchor="middle" font-size="10" fill="rgb(150,80,30)">来源：codex-rs/app-server · openai.com/index/unlocking-the-codex-harness/</text>
+  </g>
+
+  <!-- Arrow 3: App Server → Harness -->
+  <line x1="380" y1="478" x2="380" y2="500" stroke="rgb(115,114,108)" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Layer 4: Codex Harness -->
+  <g>
+    <rect x="40" y="502" width="680" height="172" rx="12" fill="rgb(241,239,232)" stroke="rgb(95,94,90)" stroke-width="0.6"/>
+    <text x="380" y="526" text-anchor="middle" font-size="14" font-weight="600" fill="rgb(68,68,65)">Codex Harness（Rust 实现，开源）</text>
+    <text x="380" y="544" text-anchor="middle" font-size="11" fill="rgb(95,94,90)">github.com/openai/codex · codex-rs/ · 96% Rust</text>
+
+    <!-- Harness 内核组件 -->
+    <rect x="60" y="556" width="640" height="100" rx="6" fill="white" stroke="rgb(95,94,90)" stroke-width="0.5"/>
+
+    <text x="135" y="578" text-anchor="middle" font-size="11" font-weight="500" fill="rgb(68,68,65)">Agent Loop</text>
+    <text x="135" y="594" text-anchor="middle" font-size="10" fill="rgb(120,118,112)">tool-call 循环</text>
+    <text x="135" y="608" text-anchor="middle" font-size="10" fill="rgb(120,118,112)">approval 模式</text>
+
+    <text x="245" y="578" text-anchor="middle" font-size="11" font-weight="500" fill="rgb(68,68,65)">Built-in Tools</text>
+    <text x="245" y="594" text-anchor="middle" font-size="10" fill="rgb(120,118,112)">Shell · Apply Patch</text>
+    <text x="245" y="608" text-anchor="middle" font-size="10" fill="rgb(120,118,112)">File Read/Write</text>
+
+    <text x="355" y="578" text-anchor="middle" font-size="11" font-weight="500" fill="rgb(68,68,65)">OS Sandbox</text>
+    <text x="355" y="594" text-anchor="middle" font-size="10" fill="rgb(120,118,112)">macOS Seatbelt</text>
+    <text x="355" y="608" text-anchor="middle" font-size="10" fill="rgb(120,118,112)">Linux seccomp+bwrap</text>
+
+    <text x="465" y="578" text-anchor="middle" font-size="11" font-weight="500" fill="rgb(68,68,65)">Sandbox Policy</text>
+    <text x="465" y="594" text-anchor="middle" font-size="10" fill="rgb(120,118,112)">read-only · workspace</text>
+    <text x="465" y="608" text-anchor="middle" font-size="10" fill="rgb(120,118,112)">danger-full-access</text>
+
+    <text x="575" y="578" text-anchor="middle" font-size="11" font-weight="500" fill="rgb(68,68,65)">Config</text>
+    <text x="575" y="594" text-anchor="middle" font-size="10" fill="rgb(120,118,112)">~/.codex/config</text>
+    <text x="575" y="608" text-anchor="middle" font-size="10" fill="rgb(120,118,112)">profiles · MCP</text>
+
+    <text x="660" y="578" text-anchor="middle" font-size="11" font-weight="500" fill="rgb(68,68,65)">Auth</text>
+    <text x="660" y="594" text-anchor="middle" font-size="10" fill="rgb(120,118,112)">ChatGPT / API</text>
+    <text x="660" y="608" text-anchor="middle" font-size="10" fill="rgb(120,118,112)">Key</text>
+
+    <text x="380" y="640" text-anchor="middle" font-size="10.5" fill="rgb(95,94,90)">注：CLI / SDK / IDE 客户端共用同一份 Harness 代码与状态语义；区别仅在客户端层</text>
+  </g>
+
+  <!-- Arrow 4: Harness → API -->
+  <line x1="380" y1="674" x2="380" y2="700" stroke="rgb(115,114,108)" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="392" y="688" font-size="11" fill="rgb(61,61,58)">HTTPS API</text>
+
+  <!-- Layer 5: OpenAI API -->
+  <g>
+    <rect x="40" y="702" width="680" height="58" rx="12" fill="rgb(241,239,232)" stroke="rgb(95,94,90)" stroke-width="0.6"/>
+    <text x="380" y="724" text-anchor="middle" font-size="13.5" font-weight="500" fill="rgb(68,68,65)">OpenAI API</text>
+    <text x="380" y="744" text-anchor="middle" font-size="11" fill="rgb(95,94,90)">gpt-5 系列 · o-series 推理模型</text>
+  </g>
+
+  <!-- Source note -->
+  <text x="380" y="780" text-anchor="middle" font-size="10.5" fill="rgb(95,94,90)">来源：developers.openai.com/codex/sdk · codex-rs/app-server/README.md · openai.com/index/unlocking-the-codex-harness/</text>
+</svg>

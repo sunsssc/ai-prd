@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ai-prd 使用方式原型</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f2ea;
+      --surface: rgba(255, 255, 255, 0.84);
+      --surface-strong: #fffdfa;
+      --surface-muted: #f3eee4;
+      --surface-user: #f2ede2;
+      --line: #e4ddd1;
+      --line-soft: #ede7dc;
+      --text: #171612;
+      --text-soft: #5f5b52;
+      --text-faint: #8d877d;
+      --brand: #c86443;
+      --brand-soft: #f3ddd4;
+      --olive: #5d6a51;
+      --olive-soft: #e4ebdc;
+      --pink: #755c64;
+      --pink-soft: #efe5e8;
+      --gold: #826a3a;
+      --gold-soft: #f4ebd7;
+      --dark: #4f4d45;
+      --radius-xl: 28px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-pill: 999px;
+      --rail-width: 56px;
+      --sidebar-width: 288px;
+      --shell-padding: clamp(8px, 1.2vw, 18px);
+      --shadow-lg: 0 20px 46px rgba(23, 22, 18, 0.06);
+      --shadow-md: 0 10px 26px rgba(23, 22, 18, 0.05);
+      --font-serif: "Iowan Old Style", "Palatino Linotype", "Songti SC", "Noto Serif SC", Georgia, serif;
+      --font-sans: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(200, 100, 67, 0.08), transparent 26%),
+        radial-gradient(circle at top right, rgba(93, 106, 81, 0.08), transparent 24%),
+        var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+    }
+
+    body { padding: 0; }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button, textarea { font: inherit; }
+
+    button {
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 180ms ease, border-color 180ms ease, transform 180ms ease, color 180ms ease;
+    }
+
+    .app-shell {
+      position: relative;
+      width: 100vw;
+      display: grid;
+      grid-template-columns: var(--rail-width) minmax(0, 1fr);
+      gap: 0;
+      min-height: 100vh;
+    }
+
+    .app-shell.sidebar-expanded {
+      grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    }
+
+    .panel {
+      background: var(--surface);
+      backdrop-filter: blur(10px);
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      overflow: hidden;
+    }
+
+    .layout-sidebar {
+      position: relative;
+      width: 100%;
+      padding: 14px 12px 16px;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+      min-height: 100vh;
+      overflow: hidden;
+      background: linear-gradient(180deg, #faf8f2, #f7f4ec);
+      border-right: 1px solid rgba(228, 221, 209, 0.86);
+      transition: width 220ms ease, padding 220ms ease;
+    }
+
+    .app-shell:not(.sidebar-expanded) .layout-sidebar {
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+
+    .app-shell.sidebar-expanded .layout-main {
+      border-left: none;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .sidebar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .sidebar-toggle-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--line);
+      background: rgba(255, 253, 250, 0.92);
+      color: var(--text-soft);
+      box-shadow: var(--shadow-md);
+    }
+
+    .sidebar-toggle-button {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      font-size: 1rem;
+    }
+
+    .brand h1, .section-title, .chat-title, .message-title, .nav-copy strong { margin: 0; }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark, .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      color: #fbf8f3;
+      background: var(--dark);
+      font-size: 0.86rem;
+      font-weight: 600;
+      flex: 0 0 auto;
+    }
+
+    .brand h1 {
+      font-family: var(--font-serif);
+      font-size: 1.36rem;
+      font-weight: 500;
+    }
+
+    .brand p, .muted, .message-card p, .composer-hint, .scope-note, .recent-item p, .nav-copy p {
+      margin: 0;
+      color: var(--text-soft);
+      line-height: 1.7;
+      font-size: 0.95rem;
+    }
+
+    .sidebar-card, .recent-item, .nav-block, .message-card, .composer, .scope-card {
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+    }
+
+    .sidebar-card {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .sidebar-spacer {
+      min-height: 8px;
+    }
+
+    .nav-block {
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+      background: rgba(251, 250, 246, 0.88);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      color: var(--text-soft);
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+    }
+
+    .nav-item:hover,
+    .recent-item:hover,
+    .nav-link:hover,
+    .chip:hover,
+    .ghost-button:hover {
+      transform: translateY(-1px);
+      border-color: #d3cabd;
+      background: var(--surface-strong);
+    }
+
+    .nav-item.active {
+      background: var(--surface-muted);
+      border-color: var(--line);
+      color: var(--text);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 8px;
+    }
+
+    .user-status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 8px;
+      border-radius: 16px;
+      color: var(--text-soft);
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #4f4d45;
+      color: #fffaf4;
+      font-weight: 600;
+      flex: 0 0 auto;
+    }
+
+    .user-meta strong,
+    .user-meta span {
+      display: block;
+    }
+
+    .user-meta strong {
+      font-size: 0.92rem;
+      color: var(--text);
+    }
+
+    .user-meta span {
+      font-size: 0.8rem;
+      color: var(--text-faint);
+    }
+
+    .app-shell:not(.sidebar-expanded) .brand-copy,
+    .app-shell:not(.sidebar-expanded) .nav-copy,
+    .app-shell:not(.sidebar-expanded) .sidebar-card,
+    .app-shell:not(.sidebar-expanded) .user-meta {
+      display: none;
+    }
+
+    .app-shell:not(.sidebar-expanded) .sidebar-header {
+      justify-content: center;
+    }
+
+    .app-shell:not(.sidebar-expanded) .brand {
+      display: none;
+    }
+
+    .app-shell:not(.sidebar-expanded) .sidebar-actions {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .app-shell:not(.sidebar-expanded) .nav-block {
+      padding: 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      justify-items: center;
+    }
+
+    .app-shell:not(.sidebar-expanded) .nav-item {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      justify-content: center;
+      border-radius: 14px;
+    }
+
+    .app-shell:not(.sidebar-expanded) .sidebar-footer {
+      padding-top: 0;
+    }
+
+    .app-shell:not(.sidebar-expanded) .user-status {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .nav-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 0.78rem;
+      font-weight: 600;
+      flex: 0 0 auto;
+    }
+
+    .nav-icon.blue { background: var(--brand-soft); color: var(--brand); }
+    .nav-icon.pink { background: var(--pink-soft); color: var(--pink); }
+    .nav-icon.green { background: var(--olive-soft); color: var(--olive); }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: 1.04rem;
+      font-weight: 500;
+    }
+
+    .tiny-pill, .chip, .source-pill, .ghost-button, .primary-button, .nav-link {
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--line);
+    }
+
+    .tiny-pill, .nav-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      background: var(--surface-muted);
+    }
+
+    .tiny-pill.blue, .chip.active-blue, .source-pill.blue {
+      background: var(--brand-soft);
+      color: var(--brand);
+      border-color: #e5cec4;
+    }
+
+    .tiny-pill.green, .chip.active-green, .source-pill.green {
+      background: var(--olive-soft);
+      color: var(--olive);
+      border-color: #d4ddcb;
+    }
+
+    .tiny-pill.pink, .chip.active-pink, .source-pill.pink {
+      background: var(--pink-soft);
+      color: var(--pink);
+      border-color: #dfd2d7;
+    }
+
+    .tiny-pill.yellow, .chip.active-yellow, .source-pill.yellow {
+      background: var(--gold-soft);
+      color: var(--gold);
+      border-color: #e7dbc4;
+    }
+
+    .recent-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .recent-item {
+      padding: 14px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .recent-item.active {
+      border-color: #d7c7b6;
+      box-shadow: 0 0 0 1px #d7c7b6, var(--shadow-md);
+    }
+
+    .recent-item strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.95rem;
+    }
+
+    .layout-main {
+      display: grid;
+      grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+      min-height: 0;
+      min-width: 0;
+    }
+
+    .chat-header {
+      padding: 24px 26px 20px;
+      display: grid;
+      gap: 16px;
+      border-bottom: 1px solid var(--line-soft);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(251, 250, 246, 0.9));
+    }
+
+    .chat-header > *,
+    .scope-strip > *,
+    .chat-stage > *,
+    .composer-shell > * {
+      width: min(980px, 100%);
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .header-top, .composer-top, .composer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .chat-title {
+      font-family: var(--font-serif);
+      font-size: 2rem;
+      font-weight: 500;
+      line-height: 1.12;
+    }
+
+    .header-actions, .chip-row, .source-row, .scope-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .scope-strip { padding: 18px 26px 0; }
+
+    .scope-card {
+      padding: 18px;
+      background: rgba(251, 250, 246, 0.84);
+    }
+
+    .scope-title {
+      margin: 0 0 8px;
+      font-size: 0.94rem;
+      font-weight: 600;
+      color: var(--text-soft);
+    }
+
+    .compact-details {
+      margin-top: 6px;
+    }
+
+    .compact-details summary {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      color: var(--text-soft);
+      line-height: 1.65;
+      font-size: 0.94rem;
+    }
+
+    .compact-details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .compact-label {
+      flex: 0 0 auto;
+      color: var(--text-faint);
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    .compact-summary {
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .compact-action {
+      flex: 0 0 auto;
+      color: var(--text-faint);
+      font-size: 0.82rem;
+      white-space: nowrap;
+    }
+
+    .detail-panel {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--line-soft);
+    }
+
+    .detail-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .detail-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      color: var(--text-soft);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    .detail-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      margin-top: 0.48em;
+      flex: 0 0 auto;
+      background: var(--text-faint);
+    }
+
+    .detail-dot.blue { background: var(--brand); }
+    .detail-dot.green { background: var(--olive); }
+    .detail-dot.pink { background: var(--pink); }
+    .detail-dot.yellow { background: var(--gold); }
+    .detail-dot.stone { background: var(--stone); }
+
+    .chip, .source-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--surface-muted);
+      color: var(--text-soft);
+      font-size: 0.84rem;
+    }
+
+    .chat-stage {
+      padding: 34px 26px 0;
+      overflow: auto;
+    }
+
+    .message-stream {
+      display: grid;
+      gap: 34px;
+    }
+
+    .message-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+    }
+
+    .message-row.user {
+      justify-items: end;
+    }
+
+    .avatar {
+      display: none;
+    }
+
+    .message-card {
+      width: min(840px, 100%);
+      padding: 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      animation: rise 260ms ease both;
+    }
+
+    .message-row.assistant .message-card {
+      color: var(--text);
+    }
+
+    .message-row.user .message-card {
+      width: min(560px, 100%);
+      justify-self: end;
+      padding: 16px 20px;
+      background: var(--surface-user);
+      border: 1px solid #e8decc;
+      border-radius: 18px;
+      box-shadow: none;
+    }
+
+    .message-meta {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: var(--text-faint);
+      font-size: 0.82rem;
+      letter-spacing: 0.01em;
+    }
+
+    .message-meta span + span::before {
+      content: "·";
+      margin-right: 10px;
+      color: #b5aea4;
+    }
+
+    .message-row.assistant .message-meta {
+      margin-bottom: 14px;
+    }
+
+    .message-title {
+      margin: 18px 0 12px;
+      font-family: var(--font-sans);
+      font-size: 1.36rem;
+      font-weight: 600;
+      line-height: 1.45;
+    }
+
+    .message-body {
+      color: var(--text);
+      font-size: 1.06rem;
+      line-height: 1.95;
+    }
+
+    .message-body p {
+      margin: 0;
+      color: inherit;
+    }
+
+    .message-body > * + * {
+      margin-top: 18px;
+    }
+
+    .message-card ul {
+      margin: 0;
+      padding-left: 1.3em;
+      color: inherit;
+      line-height: 1.95;
+    }
+
+    .message-card li + li { margin-top: 8px; }
+
+    .message-section-label {
+      margin: 22px 0 10px;
+      color: var(--text-faint);
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .message-row.user .compact-details {
+      margin-top: 0;
+      margin-bottom: 14px;
+    }
+
+    .message-row.user .compact-details summary {
+      justify-content: flex-end;
+      text-align: right;
+    }
+
+    .message-row.assistant .compact-details {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .message-row.assistant .compact-details summary {
+      gap: 12px;
+      font-size: 0.96rem;
+      color: var(--text-soft);
+    }
+
+    .message-row.assistant .compact-label {
+      color: var(--text);
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .message-row.assistant .compact-action {
+      font-size: 0.8rem;
+    }
+
+    .message-row.assistant .detail-panel {
+      margin-top: 14px;
+      padding-top: 0;
+      border-top: none;
+    }
+
+    .message-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .message-action-button {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-faint);
+      font-size: 0.95rem;
+      box-shadow: none;
+    }
+
+    .message-action-button:hover {
+      background: rgba(255, 255, 255, 0.72);
+      border-color: var(--line);
+      color: var(--text-soft);
+    }
+
+    .composer-shell {
+      padding: 22px 26px 26px;
+      margin-top: 22px;
+      border-top: 1px solid var(--line-soft);
+      background: rgba(251, 250, 246, 0.68);
+    }
+
+    .composer {
+      padding: 18px 20px;
+      display: grid;
+      gap: 14px;
+      border-radius: 24px;
+      background: rgba(255, 253, 248, 0.92);
+      border: 1px solid rgba(228, 221, 209, 0.92);
+      box-shadow: 0 10px 28px rgba(23, 22, 18, 0.04);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 108px;
+      resize: vertical;
+      padding: 8px 0;
+      border-radius: 0;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font-size: 1rem;
+      line-height: 1.8;
+      outline: none;
+    }
+
+    textarea:focus {
+      box-shadow: none;
+    }
+
+    .ghost-button, .primary-button {
+      padding: 10px 16px;
+      font-size: 0.95rem;
+      background: var(--surface-muted);
+      color: var(--text-soft);
+    }
+
+    .primary-button {
+      background: var(--brand);
+      color: #fff8f1;
+      border-color: var(--brand);
+    }
+
+    .primary-button:hover {
+      background: #b85737;
+      border-color: #b85737;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 800px) {
+      .header-top, .composer-top, .composer-bottom, .section-head {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .message-row, .message-row.user { grid-template-columns: 1fr; }
+      .avatar { display: none; }
+      .message-row.user .message-card {
+        width: 100%;
+        justify-self: stretch;
+      }
+      .chat-title { font-size: 1.56rem; }
+      .message-title { font-size: 1.22rem; }
+      .message-body {
+        font-size: 1rem;
+        line-height: 1.86;
+      }
+      .message-row.user .compact-details summary {
+        justify-content: flex-start;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell" id="appShell">
+    <aside class="panel layout-sidebar" id="layoutSidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-mark">A·P</div>
+          <div>
+            <h1>ai-prd</h1>
+            <p>把需求、业务文档和代码知识拉到同一场会话里。</p>
+          </div>
+        </div>
+        <div class="sidebar-actions">
+          <button class="sidebar-toggle-button" id="sidebarToggleButton" type="button" aria-label="切换导航">☰</button>
+        </div>
+      </div>
+
+      <div class="nav-block">
+        <a class="nav-item active" href="ai-prd-usage-prototype.html">
+          <div class="nav-icon blue">AI</div>
+          <div class="nav-copy">
+            <strong>AI 助手</strong>
+            <p>默认会话入口</p>
+          </div>
+        </a>
+        <a class="nav-item" href="ai-prd-knowledge-prototype.html">
+          <div class="nav-icon pink">知</div>
+          <div class="nav-copy">
+            <strong>知识库</strong>
+            <p>管理需求 / 业务文档 / 代码</p>
+          </div>
+        </a>
+        <a class="nav-item" href="ai-prd-skill-prototype.html">
+          <div class="nav-icon green">技</div>
+          <div class="nav-copy">
+            <strong>Skill</strong>
+            <p>选择能力后直接开工</p>
+          </div>
+        </a>
+      </div>
+
+      <section class="sidebar-card">
+        <div class="section-head">
+          <h2 class="section-title">最近会话</h2>
+          <span class="tiny-pill green">7 条</span>
+        </div>
+        <div class="recent-list" id="recentList">
+          <a class="recent-item" data-preset="default" href="ai-prd-usage-prototype.html?preset=default">
+            <strong>现货杠杆体验金活动评审</strong>
+            <p>需求 + 业务文档 + 代码</p>
+          </a>
+          <a class="recent-item" data-preset="req-prd-2418" href="ai-prd-usage-prototype.html?preset=req-prd-2418">
+            <strong>PRD-2418 需求评审</strong>
+            <p>从需求文档发起</p>
+          </a>
+          <a class="recent-item" data-preset="biz-coupon-rules" href="ai-prd-usage-prototype.html?preset=biz-coupon-rules">
+            <strong>优惠券规则澄清</strong>
+            <p>从业务文档发起</p>
+          </a>
+          <a class="recent-item" data-preset="code-bonus-coupon" href="ai-prd-usage-prototype.html?preset=code-bonus-coupon">
+            <strong>bonus-coupon 代码影响分析</strong>
+            <p>从代码范围发起</p>
+          </a>
+          <a class="recent-item" data-preset="req-prd-3027" href="ai-prd-usage-prototype.html?preset=req-prd-3027">
+            <strong>Launchpool 改版测试点</strong>
+            <p>从需求文档发起</p>
+          </a>
+          <a class="recent-item" data-preset="code-appeal-refund" href="ai-prd-usage-prototype.html?preset=code-appeal-refund">
+            <strong>P2P 补偿链路影响分析</strong>
+            <p>从代码范围发起</p>
+          </a>
+          <a class="recent-item" data-preset="skill-requirement-review" href="ai-prd-usage-prototype.html?preset=skill-requirement-review">
+            <strong>Skill: 需求评审</strong>
+            <p>从 Skill 页直接开始</p>
+          </a>
+        </div>
+      </section>
+
+      <section class="sidebar-card">
+        <div class="section-head">
+          <h2 class="section-title">联动说明</h2>
+          <span class="tiny-pill blue">已对齐</span>
+        </div>
+        <p class="muted">会话页左边栏现在和知识库页、Skill 页共享同一套导航结构。知识库入口也已改成围绕“需求文档 / 业务文档 / 代码”三类上下文组织。</p>
+      </section>
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="sidebar-footer">
+        <div class="user-status">
+          <div class="user-avatar">H</div>
+          <div class="user-meta">
+            <strong>Jordan</strong>
+            <span>已登录 · Product Workspace</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="panel layout-main">
+      <header class="chat-header">
+        <div class="header-top">
+          <div>
+            <h1 class="chat-title" id="chatTitle"></h1>
+            <p class="muted" id="chatSubtitle"></p>
+          </div>
+          <div class="header-actions">
+            <span class="tiny-pill blue" id="agentBadge"></span>
+            <span class="tiny-pill green" id="modeBadge"></span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <a class="nav-link" href="ai-prd-knowledge-prototype.html">去知识库页</a>
+          <a class="nav-link" href="ai-prd-skill-prototype.html">去 Skill 页</a>
+          <a class="nav-link" href="ai-prd-usage-prototype.html?preset=default">恢复默认会话</a>
+        </div>
+      </header>
+
+      <section class="scope-strip">
+        <div class="scope-card">
+          <div class="scope-title" id="scopeTitle"></div>
+          <div class="scope-row" id="contextSummary"></div>
+          <p class="scope-note" id="scopeNote"></p>
+        </div>
+      </section>
+
+      <section class="chat-stage">
+        <div class="message-stream" id="messageStream"></div>
+      </section>
+
+      <footer class="composer-shell">
+        <div class="composer">
+          <div class="composer-top">
+            <div class="chip-row">
+              <button class="chip context-chip" data-context="prd">@需求文档</button>
+              <button class="chip context-chip" data-context="biz">@业务文档</button>
+              <button class="chip context-chip" data-context="code">@代码范围</button>
+            </div>
+            <div class="chip-row">
+              <button class="chip skill-chip" data-skill="需求评审">需求评审</button>
+              <button class="chip skill-chip" data-skill="测试点生成">测试点生成</button>
+              <button class="chip skill-chip" data-skill="代码影响分析">代码影响分析</button>
+            </div>
+          </div>
+
+          <textarea id="promptInput" placeholder="描述你的问题，或先用 @ 标记更具体的上下文。"></textarea>
+
+          <div class="composer-bottom">
+            <p class="composer-hint">会话里的知识上下文只保留三类：需求文档、业务文档、代码。Skill 作为能力层单独挂载，不再把“知识条目”作为第四类对象。</p>
+            <div class="chip-row">
+              <button class="ghost-button" id="clearButton">清空</button>
+              <button class="primary-button" id="sendButton">发送</button>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const appShell = document.getElementById("appShell");
+    const sidebarToggleButton = document.getElementById("sidebarToggleButton");
+    const contextChips = Array.from(document.querySelectorAll(".context-chip"));
+    const skillChips = Array.from(document.querySelectorAll(".skill-chip"));
+    const promptInput = document.getElementById("promptInput");
+    const sendButton = document.getElementById("sendButton");
+    const clearButton = document.getElementById("clearButton");
+    const contextSummary = document.getElementById("contextSummary");
+    const messageStream = document.getElementById("messageStream");
+    const recentList = document.getElementById("recentList");
+    const chatTitle = document.getElementById("chatTitle");
+    const chatSubtitle = document.getElementById("chatSubtitle");
+    const agentBadge = document.getElementById("agentBadge");
+    const modeBadge = document.getElementById("modeBadge");
+    const scopeTitle = document.getElementById("scopeTitle");
+    const scopeNote = document.getElementById("scopeNote");
+    let isSidebarExpanded = false;
+
+    function syncSidebarState() {
+      syncSidebarVisibility();
+    }
+
+    function syncSidebarVisibility() {
+      const isVisible = isSidebarExpanded;
+      appShell.classList.toggle("sidebar-expanded", isVisible);
+      sidebarToggleButton.textContent = isVisible ? "←" : "☰";
+      sidebarToggleButton.setAttribute("aria-label", isVisible ? "收起导航" : "展开导航");
+      sidebarToggleButton.setAttribute("aria-expanded", String(isVisible));
+    }
+
+    function closeSidebar() {
+      isSidebarExpanded = false;
+      syncSidebarVisibility();
+    }
+
+    function toggleSidebar() {
+      isSidebarExpanded = !isSidebarExpanded;
+      syncSidebarVisibility();
+    }
+
+    const contextStyle = {
+      prd: { chipClass: "active-blue", pillClass: "blue" },
+      biz: { chipClass: "active-pink", pillClass: "pink" },
+      code: { chipClass: "active-green", pillClass: "green" }
+    };
+
+    const skillPrompts = {
+      "需求评审": "请先给我一个适合评审会上口头同步的结论，再展开歧义点、风险点和待补规则。",
+      "测试点生成": "请根据当前挂载内容，输出一份结构化测试点清单，并标注 P0/P1/P2。",
+      "代码影响分析": "请结合当前规则和代码上下文，分析受影响的模块、接口、状态流转与回归风险。"
+    };
+
+    const presets = {
+      default: {
+        title: "现货杠杆体验金活动评审",
+        subtitle: "默认会话入口。围绕需求文档、业务文档和代码三类长期范围工作，再按每一轮显式指定的对象继续追问。",
+        agent: "Claude Agent",
+        mode: "会话范围由应用侧记录",
+        scopeTitle: "当前会话范围",
+        scopeNote: "这里只展示长期挂载的粗粒度范围，不直接把全部证据单元堆出来。",
+        contextLabels: {
+          prd: "需求范围: PRD-2418 / 发券与结算",
+          biz: "业务域: 营销域 / 优惠券规则",
+          code: "代码范围: release/bonus-coupon / coupon/**"
+        },
+        activeContexts: ["prd", "biz", "code"],
+        activeSkill: "需求评审",
+        prompt: "请继续展开：如果活动结束后用户订单还未结算，体验金和优惠券状态应该如何处理？",
+        messages: [
+          {
+            role: "user",
+            time: "09:42",
+            status: "提问",
+            sectionLabel: "本轮新增指定",
+            sources: [
+              { tone: "blue", label: "手动 @需求: PRD-2418" },
+              { tone: "pink", label: "页面选择: 营销域 / 优惠券规则" },
+              { tone: "green", label: "页面选择: release/bonus-coupon / coupon/**" }
+            ],
+            title: "请帮我做一次快速评审",
+            detail: "重点看歧义点、风控遗漏，以及测试验证点是否缺失。"
+          },
+          {
+            role: "assistant",
+            time: "09:42",
+            status: "已读取上下文",
+            sections: [
+              {
+                label: "本轮推断范围",
+                sources: [
+                  { tone: "yellow", label: "Skill: 需求评审" },
+                  { tone: "pink", label: "优惠券状态机" },
+                  { tone: "green", label: "coupon/**" }
+                ]
+              },
+              {
+                label: "实际读取对象",
+                sources: [
+                  { tone: "blue", label: "PRD-2418 / 发放规则 §4.2" },
+                  { tone: "pink", label: "营销域 / 优惠券规则 §3.1" },
+                  { tone: "green", label: "coupon_service.py" }
+                ]
+              }
+            ]
+          },
+          {
+            role: "assistant",
+            time: "09:43",
+            status: "回复",
+            title: "先给你一个可继续推进的结论",
+            detail: "当前需求写清了发券入口和资格判断，但没有明确体验金活动与既有优惠券是否互斥，也没有覆盖活动结束后的状态收敛方式。从业务规则和代码实现看，入口校验已经补上，但结算完成前后的状态落点仍然需要更明确的业务定义。",
+            bullets: [
+              "歧义点：活动结束时未结算订单的体验金和优惠券，是否进入冻结态还是继续等待结算回补。",
+              "风控点：结算回调时是否做二次资格校验，以及资格失效后的回滚链路是否完整。",
+              "测试点：重复参与、活动结束边界、订单跨天结算、冻结转失效四类场景需要补齐。"
+            ],
+            sections: [
+              {
+                label: "来源",
+                sources: [
+                  { tone: "yellow", label: "Skill: 需求评审" },
+                  { tone: "pink", label: "营销域 / 优惠券规则 §3.1" },
+                  { tone: "green", label: "coupon_service.py:120-168" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "req-prd-2418": {
+        title: "基于需求文档发起：PRD-2418 需求评审",
+        subtitle: "这个会话由需求文档对象发起，会默认带上关联业务文档和代码范围，直接进入需求评审。",
+        agent: "Claude Agent",
+        mode: "已挂载需求文档",
+        scopeTitle: "该会话由需求文档发起",
+        scopeNote: "当前以需求文档为主上下文，并挂入了高相关业务文档与代码范围。",
+        contextLabels: {
+          prd: "需求范围: PRD-2418 / 发券与结算",
+          biz: "业务域: 营销域 / 优惠券规则",
+          code: "代码范围: release/bonus-coupon / coupon/**"
+        },
+        activeContexts: ["prd", "biz", "code"],
+        activeSkill: "需求评审",
+        prompt: "请先给我一个适合评审会上直接同步的结论，再拆出歧义点、风控遗漏和待补规则。",
+        messages: [
+          {
+            role: "assistant",
+            time: "现在",
+            status: "已准备会话",
+            title: "需求文档已经挂进当前会话",
+            detail: "当前会话是从 PRD-2418 发起的。你可以直接围绕需求目标、规则缺失和验收点继续追问。",
+            sections: [
+              {
+                label: "已带入",
+                sources: [
+                  { tone: "blue", label: "需求: PRD-2418" },
+                  { tone: "pink", label: "业务文档: 营销域 / 优惠券规则" },
+                  { tone: "green", label: "代码: release/bonus-coupon / coupon/**" },
+                  { tone: "yellow", label: "Skill: 需求评审" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "req-prd-3027": {
+        title: "基于需求文档发起：PRD-3027 测试点生成",
+        subtitle: "这个会话由 Launchpool 改版需求发起，更适合直接输出结构化测试点和优先级。",
+        agent: "Claude Agent",
+        mode: "已挂载需求文档",
+        scopeTitle: "该会话由需求文档发起",
+        scopeNote: "当前以需求文档为主上下文，并挂入了关联业务文档与代码范围。",
+        contextLabels: {
+          prd: "需求范围: PRD-3027 / Launchpool 改版",
+          biz: "业务域: 理财域 / Launchpool 结算说明",
+          code: "代码范围: feature/launchpool-revamp"
+        },
+        activeContexts: ["prd", "biz", "code"],
+        activeSkill: "测试点生成",
+        prompt: "请输出一份按主流程、异常流程、边界条件拆分的测试点清单，并标注 P0/P1/P2。",
+        messages: [
+          {
+            role: "assistant",
+            time: "现在",
+            status: "已准备会话",
+            title: "需求文档已经挂进当前会话",
+            detail: "当前会话以 PRD-3027 为核心，适合直接生成测试清单，也适合继续核对术语口径。",
+            sections: [
+              {
+                label: "已带入",
+                sources: [
+                  { tone: "blue", label: "需求: PRD-3027" },
+                  { tone: "pink", label: "业务文档: 理财域 / Launchpool 结算说明" },
+                  { tone: "green", label: "代码: feature/launchpool-revamp" },
+                  { tone: "yellow", label: "Skill: 测试点生成" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "biz-coupon-rules": {
+        title: "基于业务文档发起：优惠券规则澄清",
+        subtitle: "这个会话由业务文档对象发起，更适合从规则边界反推需求漏项和代码落地风险。",
+        agent: "Claude Agent",
+        mode: "已挂载业务文档",
+        scopeTitle: "该会话由业务文档发起",
+        scopeNote: "当前以业务文档为主上下文，并带上关联需求和代码范围。",
+        contextLabels: {
+          prd: "需求范围: PRD-2418 / 发券与结算",
+          biz: "业务域: 营销域 / 优惠券规则",
+          code: "代码范围: release/bonus-coupon / coupon/**"
+        },
+        activeContexts: ["biz", "prd", "code"],
+        activeSkill: "需求评审",
+        prompt: "请围绕这份业务文档，重点确认冻结、核销、补发和活动结束边界是否已经写清。",
+        messages: [
+          {
+            role: "assistant",
+            time: "现在",
+            status: "已准备会话",
+            title: "业务文档已经挂进当前会话",
+            detail: "当前会话更适合先澄清规则，再判断需求和代码是否存在口径断层。",
+            sections: [
+              {
+                label: "已带入",
+                sources: [
+                  { tone: "pink", label: "业务文档: 营销域 / 优惠券规则" },
+                  { tone: "blue", label: "需求: PRD-2418" },
+                  { tone: "green", label: "代码: release/bonus-coupon / coupon/**" },
+                  { tone: "yellow", label: "Skill: 需求评审" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "biz-launchpool-settlement": {
+        title: "基于业务文档发起：Launchpool 结算口径核对",
+        subtitle: "这个会话由业务文档对象发起，适合核对术语定义和收益结算口径是否一致。",
+        agent: "Claude Agent",
+        mode: "已挂载业务文档",
+        scopeTitle: "该会话由业务文档发起",
+        scopeNote: "当前以业务文档为主上下文，并带上关联需求和代码范围。",
+        contextLabels: {
+          prd: "需求范围: PRD-3027 / Launchpool 改版",
+          biz: "业务域: 理财域 / Launchpool 结算说明",
+          code: "代码范围: feature/launchpool-revamp"
+        },
+        activeContexts: ["biz", "prd", "code"],
+        activeSkill: "测试点生成",
+        prompt: "请先核对术语定义和收益口径，再给我一份覆盖主流程和边界场景的测试点清单。",
+        messages: [
+          {
+            role: "assistant",
+            time: "现在",
+            status: "已准备会话",
+            title: "业务文档已经挂进当前会话",
+            detail: "当前更适合从结算说明出发，核对需求、页面文案和收益逻辑是否一致。",
+            sections: [
+              {
+                label: "已带入",
+                sources: [
+                  { tone: "pink", label: "业务文档: 理财域 / Launchpool 结算说明" },
+                  { tone: "blue", label: "需求: PRD-3027" },
+                  { tone: "green", label: "代码: feature/launchpool-revamp" },
+                  { tone: "yellow", label: "Skill: 测试点生成" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "code-bonus-coupon": {
+        title: "基于代码范围发起：bonus-coupon 影响分析",
+        subtitle: "这个会话由代码上下文发起，适合直接围绕关键文件、状态机实现和回归风险展开。",
+        agent: "Claude Agent",
+        mode: "已挂载代码范围",
+        scopeTitle: "该会话由代码范围发起",
+        scopeNote: "当前以代码范围为主上下文，并带上关联需求和业务文档。",
+        contextLabels: {
+          prd: "需求范围: PRD-2418 / 发券与结算",
+          biz: "业务域: 营销域 / 优惠券规则",
+          code: "代码范围: release/bonus-coupon / coupon/**"
+        },
+        activeContexts: ["code", "prd", "biz"],
+        activeSkill: "代码影响分析",
+        prompt: "请从状态机实现、结算回调和补偿链路三个角度分析这次规则调整的影响范围。",
+        messages: [
+          {
+            role: "assistant",
+            time: "现在",
+            status: "已准备会话",
+            title: "代码范围已经挂进当前会话",
+            detail: "当前会话适合先盘清关键文件和受影响模块，再判断需求与规则是否有落地断层。",
+            sections: [
+              {
+                label: "已带入",
+                sources: [
+                  { tone: "green", label: "代码: release/bonus-coupon / coupon/**" },
+                  { tone: "blue", label: "需求: PRD-2418" },
+                  { tone: "pink", label: "业务文档: 营销域 / 优惠券规则" },
+                  { tone: "yellow", label: "Skill: 代码影响分析" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "code-appeal-refund": {
+        title: "基于代码范围发起：P2P 补偿链路影响分析",
+        subtitle: "这个会话由代码上下文发起，适合围绕接口、审核后台和补偿任务的联动风险继续深挖。",
+        agent: "Claude Agent",
+        mode: "已挂载代码范围",
+        scopeTitle: "该会话由代码范围发起",
+        scopeNote: "当前以代码范围为主上下文，并带上高相关业务文档。",
+        contextLabels: {
+          biz: "业务域: P2P / 申诉补偿规则",
+          code: "代码范围: appeal/refund-link"
+        },
+        activeContexts: ["code", "biz"],
+        activeSkill: "代码影响分析",
+        prompt: "请从接口字段、审核回调、补偿任务三个角度分析当前链路的改动面和回归风险。",
+        messages: [
+          {
+            role: "assistant",
+            time: "现在",
+            status: "已准备会话",
+            title: "代码范围已经挂进当前会话",
+            detail: "当前会话更适合从代码节点反推业务规则和接口行为的联动风险。",
+            sections: [
+              {
+                label: "已带入",
+                sources: [
+                  { tone: "green", label: "代码: appeal/refund-link" },
+                  { tone: "pink", label: "业务文档: P2P / 申诉补偿规则" },
+                  { tone: "yellow", label: "Skill: 代码影响分析" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "skill-requirement-review": {
+        title: "Skill 会话：需求评审",
+        subtitle: "这个会话是从 Skill 页直接发起的。系统已经替用户做了第一层模板选择，让会话一开始就对齐目标输出。",
+        agent: "Claude Agent",
+        mode: "已挂载 Skill 与推荐上下文",
+        scopeTitle: "该会话由 Skill 页发起",
+        scopeNote: "Skill 负责能力模板，知识上下文仍只来自需求文档、业务文档和代码。",
+        contextLabels: {
+          prd: "需求范围: PRD-2418 / 发券与结算",
+          biz: "业务域: 营销域 / 优惠券规则"
+        },
+        activeContexts: ["prd", "biz"],
+        activeSkill: "需求评审",
+        prompt: "请先给我一个适合在评审会上直接口头同步的结论，然后拆出歧义点、风险点和需要产品补充的规则。",
+        messages: [
+          {
+            role: "assistant",
+            time: "现在",
+            status: "已准备会话",
+            title: "需求评审 Skill 已挂载",
+            detail: "当前会话会优先给你结论型输出，再逐层展开歧义、风险和待补规则。",
+            sections: [
+              {
+                label: "已带入",
+                sources: [
+                  { tone: "yellow", label: "Skill: 需求评审" },
+                  { tone: "blue", label: "需求: PRD-2418" },
+                  { tone: "pink", label: "业务文档: 营销域 / 优惠券规则" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "skill-test-generator": {
+        title: "Skill 会话：测试点生成",
+        subtitle: "这个会话直接面向测试设计，适合在提测前快速拉出结构化测试点和优先级。",
+        agent: "Claude Agent",
+        mode: "已挂载 Skill 与推荐上下文",
+        scopeTitle: "该会话由 Skill 页发起",
+        scopeNote: "Skill 负责能力模板，知识上下文仍只来自需求文档、业务文档和代码。",
+        contextLabels: {
+          prd: "需求范围: PRD-3027 / Launchpool 改版",
+          biz: "业务域: 理财域 / Launchpool 结算说明",
+          code: "代码范围: feature/launchpool-revamp"
+        },
+        activeContexts: ["prd", "biz", "code"],
+        activeSkill: "测试点生成",
+        prompt: "请输出一份按主流程、异常流程、边界条件拆分的测试点清单，并标注 P0/P1/P2。",
+        messages: [
+          {
+            role: "assistant",
+            time: "现在",
+            status: "已准备会话",
+            title: "测试点生成 Skill 已挂载",
+            detail: "当前会话适合直接产出清单式结果，你可以继续追问是否需要接口级、页面级或回归级测试点。",
+            sections: [
+              {
+                label: "已带入",
+                sources: [
+                  { tone: "yellow", label: "Skill: 测试点生成" },
+                  { tone: "blue", label: "需求: PRD-3027" },
+                  { tone: "pink", label: "业务文档: 理财域 / Launchpool 结算说明" },
+                  { tone: "green", label: "代码: feature/launchpool-revamp" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "skill-impact-analysis": {
+        title: "Skill 会话：代码影响分析",
+        subtitle: "这个会话适合从规则变化反推模块、接口和回归风险，帮助产品和研发快速对齐改动面。",
+        agent: "Claude Agent",
+        mode: "已挂载 Skill 与推荐上下文",
+        scopeTitle: "该会话由 Skill 页发起",
+        scopeNote: "Skill 负责能力模板，知识上下文仍只来自需求文档、业务文档和代码。",
+        contextLabels: {
+          biz: "业务域: P2P / 申诉补偿规则",
+          code: "代码范围: appeal/refund-link"
+        },
+        activeContexts: ["biz", "code"],
+        activeSkill: "代码影响分析",
+        prompt: "请从接口、审核后台、补偿动作三个角度分析这次规则调整可能影响的模块和回归风险。",
+        messages: [
+          {
+            role: "assistant",
+            time: "现在",
+            status: "已准备会话",
+            title: "代码影响分析 Skill 已挂载",
+            detail: "当前会话会优先整理影响模块、字段和状态变化，再给出回归建议。",
+            sections: [
+              {
+                label: "已带入",
+                sources: [
+                  { tone: "yellow", label: "Skill: 代码影响分析" },
+                  { tone: "pink", label: "业务文档: P2P / 申诉补偿规则" },
+                  { tone: "green", label: "代码: appeal/refund-link" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    };
+
+    let sessionState = JSON.parse(JSON.stringify(presets.default));
+
+    function currentTimeLabel() {
+      const now = new Date();
+      return now.toLocaleTimeString("zh-CN", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function buildPromptParts(questionText) {
+      const normalized = questionText.replace(/\s+/g, " ").trim();
+      const splitIndex = normalized.search(/[，,：:；;]/);
+      if (splitIndex > 0 && splitIndex <= 24) {
+        return {
+          title: normalized.slice(0, splitIndex),
+          detail: normalized.slice(splitIndex + 1).trim()
+        };
+      }
+      return { title: normalized, detail: "" };
+    }
+
+    function renderSources(sources) {
+      if (!sources || !sources.length) {
+        return "";
+      }
+      return `
+        <div class="detail-list">
+          ${sources.map((item) => `
+            <div class="detail-item">
+              <span class="detail-dot ${item.tone}"></span>
+              <span>${escapeHtml(item.label)}</span>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function compactLabel(label) {
+      return String(label).replace(/^(手动 @需求|手动 @业务文档|手动 @代码|页面选择|需求范围|业务域|代码范围|业务文档|代码|需求|Skill)\s*:\s*/u, "");
+    }
+
+    function summarizeSources(sources, limit = 2) {
+      if (!sources || !sources.length) {
+        return "未指定";
+      }
+      const labels = sources.map((item) => compactLabel(item.label));
+      const visible = labels.slice(0, limit).join("、");
+      const rest = labels.length - limit;
+      return rest > 0 ? `${visible} +${rest}` : visible;
+    }
+
+    function renderSummaryBlock(label, sources, limit = 2) {
+      if (!sources || !sources.length) {
+        return "";
+      }
+      return `
+        <details class="compact-details">
+          <summary>
+            <span class="compact-label">${escapeHtml(label)}</span>
+            <span class="compact-summary">${escapeHtml(summarizeSources(sources, limit))}</span>
+            <span class="compact-action">查看明细</span>
+          </summary>
+          <div class="detail-panel">
+            ${renderSources(sources)}
+          </div>
+        </details>
+      `;
+    }
+
+    function renderMessageActions(message) {
+      if (message.role !== "assistant" || message.status !== "回复") {
+        return "";
+      }
+      return `
+        <div class="message-actions" aria-label="回答操作">
+          <button class="message-action-button" type="button" aria-label="复制回答">⧉</button>
+          <button class="message-action-button" type="button" aria-label="标记有帮助">👍</button>
+          <button class="message-action-button" type="button" aria-label="标记没帮助">👎</button>
+          <button class="message-action-button" type="button" aria-label="重新生成">↻</button>
+        </div>
+      `;
+    }
+
+    function renderMessage(message) {
+      const wrapper = document.createElement("div");
+      wrapper.className = message.role === "user" ? "message-row user" : "message-row assistant";
+      const sections = Array.isArray(message.sections)
+        ? message.sections.map((section) => renderSummaryBlock(section.label, section.sources, section.label === "来源" ? 2 : 2)).join("")
+        : "";
+      const bodyParts = [
+        message.title ? `<h3 class="message-title">${escapeHtml(message.title)}</h3>` : "",
+        message.detail ? `<p>${escapeHtml(message.detail)}</p>` : "",
+        message.bullets && message.bullets.length ? `<ul>${message.bullets.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : ""
+      ].filter(Boolean).join("");
+
+      wrapper.innerHTML = `
+        <div class="avatar ${message.role === "user" ? "user" : ""}">${message.role === "user" ? "你" : "AI"}</div>
+        <article class="message-card">
+          <div class="message-meta">
+            <span>${escapeHtml(message.time || currentTimeLabel())}</span>
+            <span>${escapeHtml(message.status || "")}</span>
+          </div>
+          ${message.sectionLabel && message.sources ? renderSummaryBlock(message.sectionLabel, message.sources, 2) : ""}
+          ${bodyParts ? `<div class="message-body">${bodyParts}</div>` : ""}
+          ${sections}
+          ${renderMessageActions(message)}
+        </article>
+      `;
+      return wrapper;
+    }
+
+    function renderScope() {
+      const scopeSources = sessionState.activeContexts.map((key) => ({
+        tone: contextStyle[key].pillClass,
+        label: sessionState.contextLabels[key]
+      }));
+      if (sessionState.activeSkill) {
+        scopeSources.push({ tone: "yellow", label: `Skill: ${sessionState.activeSkill}` });
+      }
+      contextSummary.innerHTML = renderSummaryBlock("范围摘要", scopeSources, 2);
+    }
+
+    function renderMessages() {
+      messageStream.innerHTML = "";
+      sessionState.messages.forEach((message) => {
+        messageStream.appendChild(renderMessage(message));
+      });
+    }
+
+    function renderContextChips() {
+      contextChips.forEach((chip) => {
+        const key = chip.dataset.context;
+        chip.classList.remove("active-blue", "active-pink", "active-green");
+        chip.disabled = !sessionState.contextLabels[key];
+        if (sessionState.activeContexts.includes(key)) {
+          chip.classList.add(contextStyle[key].chipClass);
+        }
+      });
+    }
+
+    function renderSkillChips() {
+      skillChips.forEach((chip) => {
+        chip.classList.toggle("active-yellow", chip.dataset.skill === sessionState.activeSkill);
+      });
+    }
+
+    function renderHeader() {
+      chatTitle.textContent = sessionState.title;
+      chatSubtitle.textContent = sessionState.subtitle;
+      agentBadge.textContent = sessionState.agent;
+      modeBadge.textContent = sessionState.mode;
+      scopeTitle.textContent = sessionState.scopeTitle;
+      scopeNote.textContent = sessionState.scopeNote;
+      document.title = `${sessionState.title} · ai-prd 使用方式原型`;
+    }
+
+    function renderRecent() {
+      const currentPreset = new URLSearchParams(window.location.search).get("preset") || "default";
+      recentList.querySelectorAll(".recent-item").forEach((item) => {
+        item.classList.toggle("active", item.dataset.preset === currentPreset);
+      });
+    }
+
+    function renderPrompt() {
+      promptInput.value = sessionState.prompt || "";
+    }
+
+    function renderAll() {
+      renderHeader();
+      renderScope();
+      renderMessages();
+      renderContextChips();
+      renderSkillChips();
+      renderRecent();
+      renderPrompt();
+    }
+
+    function buildTurnSources() {
+      return sessionState.activeContexts.map((key) => ({
+        tone: contextStyle[key].pillClass,
+        label: `页面选择: ${sessionState.contextLabels[key].replace(/^.*?:\s*/, "")}`
+      }));
+    }
+
+    contextChips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const key = chip.dataset.context;
+        if (!sessionState.contextLabels[key]) {
+          return;
+        }
+        if (sessionState.activeContexts.includes(key)) {
+          sessionState.activeContexts = sessionState.activeContexts.filter((item) => item !== key);
+        } else {
+          sessionState.activeContexts.push(key);
+        }
+        renderScope();
+        renderContextChips();
+      });
+    });
+
+    skillChips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        sessionState.activeSkill = chip.dataset.skill;
+        promptInput.value = skillPrompts[chip.dataset.skill] || promptInput.value;
+        renderScope();
+        renderSkillChips();
+      });
+    });
+
+    clearButton.addEventListener("click", () => {
+      promptInput.value = "";
+      promptInput.focus();
+    });
+
+    sendButton.addEventListener("click", () => {
+      const questionText = promptInput.value.trim() || "这里会显示新的问题。";
+      const promptParts = buildPromptParts(questionText);
+      const message = {
+        role: "user",
+        time: currentTimeLabel(),
+        status: "提问",
+        sectionLabel: "本轮新增指定",
+        sources: buildTurnSources(),
+        title: promptParts.title,
+        detail: promptParts.detail
+      };
+      sessionState.messages.push(message);
+      messageStream.appendChild(renderMessage(message));
+      messageStream.lastElementChild.scrollIntoView({ behavior: "smooth", block: "end" });
+    });
+
+    const presetKey = new URLSearchParams(window.location.search).get("preset") || "default";
+    isSidebarExpanded = false;
+
+    sidebarToggleButton.addEventListener("click", toggleSidebar);
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeSidebar();
+      }
+    });
+
+    sessionState = JSON.parse(JSON.stringify(presets[presetKey] || presets.default));
+    syncSidebarState();
+    renderAll();
+  </script>
+</body>
+</html>

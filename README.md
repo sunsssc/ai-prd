@@ -1,0 +1,59 @@
+# ai-prd
+
+Agents for a product and engineering team. ai-prd gives people one assistant that answers from the company's code, requirements and docs, with sources. Its background agents review pull requests, review changed requirements and keep business docs in sync with code, without anyone starting them.
+
+It was built at Vinotech (engineering for the CoinEx exchange) in 2026 and used by 100+ product and engineering staff until the company wound down in September 2026. This is a public snapshot: internal names, emails, domains and IDs have been replaced, and deployment files are left out.
+
+## Agents that run on their own
+
+| Agent | Trigger | What it does | Output |
+| --- | --- | --- | --- |
+| PR review | GitHub poll every 5 minutes; first review request on a non-draft PR | Reviews the PR in its own git worktree, against the linked ClickUp requirement and a review policy | Report emailed to the PR author |
+| Requirement review | Hourly ClickUp sync; trivial edits skipped | Checks the changed spec with a requirement-check Skill | Review file with an unread badge |
+| Business-doc update | After each hourly code sync | A generator agent proposes doc edits; a separate reviewer agent checks them | Git commit when the gate passes, otherwise a human queue |
+| Assistant | A person's question | Answers from company knowledge, Skills and tools | Streamed answer with a citation trace |
+
+## The doc-update gate
+
+1. A generator agent proposes the edit and rates its confidence.
+2. A reviewer agent checks it in a separate session and may not reuse the generator's conclusions.
+3. The generator revises once.
+4. The edit commits automatically only if both agents agree at 0.85 confidence or higher, neither raises a risk flag (funds, permissions, risk control, rule deletion and others), no other repo conflicts with it, and the doc file is unchanged since the run began. Everything else waits in a human queue.
+
+The gate is checked in code, not by either agent: [`automation.py`](source/backend/app/business/business_doc_updates/automation.py).
+
+## Agent runtime
+
+- **Two vendors, one interface.** The same tools and events run on the Claude Agent SDK or on `codex app-server` over JSON-RPC, chosen per deployment ([`agent_runtime/`](source/backend/app/integrations/agent_runtime/)). `AI_PROVIDER=mock` runs everything against a fake runtime.
+- **Tools through MCP.** An in-process MCP server exposes only what each job needs: the internal knowledge base, the test-data platform, git refs, and URL fetch for security scans.
+- **Sandbox.** Agents run in an OS sandbox (bubblewrap and AppArmor on Linux). Company knowledge is read-only; only a personal folder and `/tmp` are writable. A git guard reverts any change to a code repo after each turn.
+- **Approvals.** Tool approvals appear as cards in the UI and are saved before the call runs. Test-data writes run only after the user types an exact confirmation phrase. Each user's agent access is approved by an admin.
+- **Limits.** Turn caps per job, one running turn per session, and stuck jobs fail after an hour.
+
+## Layout
+
+| Path | Contents |
+| --- | --- |
+| `source/backend` | FastAPI app (Python 3.11+) and its tests |
+| `source/frontend` | React and Vite |
+| `source/docs` | Design notes, in Chinese |
+| `source/scripts` | ClickUp sync and maintenance scripts |
+
+## Tests
+
+Backend: 425 pass. Eight are skipped because the repo-level `deployment/` and `.claude/skills` folders are not part of this snapshot.
+
+```sh
+cd source/backend
+uv run --extra dev pytest
+```
+
+Frontend: 105 pass.
+
+```sh
+cd source/frontend
+pnpm install
+node --test src/utils/*.test.js
+```
+
+Running it as a service needs the original integrations configured: ClickUp, the internal knowledge base, the test-data platform, GitHub access and SMTP. See [`config.py`](source/backend/app/core/config.py).

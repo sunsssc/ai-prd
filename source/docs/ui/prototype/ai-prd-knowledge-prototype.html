@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ai-prd 知识库原型</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f3ea;
+      --surface: #fbfaf6;
+      --surface-strong: #ffffff;
+      --surface-muted: #f3efe6;
+      --paper: #f8f4ec;
+      --paper-deep: #efe7da;
+      --text: #161514;
+      --text-soft: #5d5b56;
+      --text-faint: #8a867e;
+      --line: #e7e2d6;
+      --line-soft: #f0ebe1;
+      --brand: #c96442;
+      --brand-deep: #a65034;
+      --brand-soft: #f4ddd2;
+      --olive: #5e6a52;
+      --olive-soft: #e5ebdd;
+      --sand: #f3e5c4;
+      --sand-deep: #916f2d;
+      --stone: #e8ddd0;
+      --stone-deep: #6d594b;
+      --shadow-lg: 0 18px 40px rgba(22, 21, 20, 0.06);
+      --shadow-md: 0 8px 26px rgba(22, 21, 20, 0.05);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-pill: 999px;
+      --rail-width: 56px;
+      --sidebar-width: 288px;
+      --shell-padding: clamp(8px, 1.2vw, 20px);
+      --font-serif: "Iowan Old Style", "Palatino Linotype", "Songti SC", "Noto Serif SC", Georgia, serif;
+      --font-sans: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      --font-mono: "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: #fcfaf5;
+      color: var(--text);
+      font-family: var(--font-sans);
+    }
+
+    body {
+      padding: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font: inherit;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, color 180ms ease;
+    }
+
+    .app-shell {
+      position: relative;
+      display: grid;
+      grid-template-columns: var(--rail-width) minmax(0, 1fr);
+      gap: 0;
+      width: 100vw;
+      min-height: 100vh;
+    }
+
+    .app-shell.sidebar-expanded {
+      grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    }
+
+    .panel {
+      background: rgba(251, 250, 246, 0.88);
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    .layout-sidebar {
+      position: relative;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 14px 12px 16px;
+      min-height: 100vh;
+      overflow: hidden;
+      background: linear-gradient(180deg, #faf8f2, #f7f4ec);
+      border-right: 1px solid var(--line-soft);
+      transition: transform 220ms ease, box-shadow 220ms ease, opacity 180ms ease, visibility 180ms ease;
+    }
+
+    .app-shell:not(.sidebar-expanded) .layout-sidebar {
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+
+    .app-shell.sidebar-expanded .main-shell {
+      border-left: none;
+    }
+
+    .sidebar-toggle-button,
+    .pane-toggle-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--text-soft);
+      box-shadow: var(--shadow-md);
+    }
+
+    .sidebar-toggle-button {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      font-size: 1rem;
+    }
+
+    .pane-toggle-button {
+      padding: 8px 12px;
+      font-size: 0.84rem;
+      white-space: nowrap;
+    }
+
+    .sidebar-header,
+    .detail-head,
+    .tree-toolbar,
+    .button-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .sidebar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .sidebar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: #faf9f5;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      background: #2f2d2b;
+    }
+
+    .brand-copy h1,
+    .pane-title,
+    .detail-title,
+    .section-label {
+      margin: 0;
+    }
+
+    .brand-copy h1,
+    .pane-title,
+    .detail-title,
+    .section-label {
+      font-family: var(--font-serif);
+      font-weight: 500;
+    }
+
+    .brand-copy h1 {
+      font-size: 1.38rem;
+    }
+
+    .brand-copy p,
+    .muted,
+    .nav-copy p,
+    .detail-card p,
+    .meta-line,
+    .child-card p,
+    .overview-card p,
+    .preview-card p {
+      margin: 0;
+      color: var(--text-soft);
+      line-height: 1.65;
+      font-size: 0.96rem;
+    }
+
+    .nav-block {
+      display: grid;
+      gap: 8px;
+      padding: 4px 0;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      color: var(--text-soft);
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+    }
+
+    .nav-item:hover {
+      transform: translateX(2px);
+    }
+
+    .nav-item.active {
+      background: var(--surface-muted);
+      border-color: var(--line);
+      color: var(--text);
+    }
+
+    .nav-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 0.78rem;
+      font-weight: 600;
+      flex: 0 0 auto;
+    }
+
+    .nav-icon.blue {
+      background: var(--brand-soft);
+      color: var(--brand-deep);
+    }
+
+    .nav-icon.pink {
+      background: #f2e7d3;
+      color: #866633;
+    }
+
+    .nav-icon.green {
+      background: var(--olive-soft);
+      color: var(--olive);
+    }
+
+    .nav-copy strong,
+    .detail-card strong,
+    .launch-copy strong,
+    .child-card strong,
+    .preview-card strong,
+    .overview-card strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .subnav {
+      display: grid;
+      gap: 6px;
+      margin: 2px 0 10px 14px;
+      padding: 2px 0 0 14px;
+      border-left: 1px solid var(--line);
+    }
+
+    .sidebar-spacer {
+      min-height: 8px;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 8px;
+    }
+
+    .user-status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 8px;
+      border-radius: 16px;
+      color: var(--text-soft);
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #2f2d2b;
+      color: #fffaf4;
+      font-weight: 600;
+      flex: 0 0 auto;
+    }
+
+    .user-meta strong,
+    .user-meta span {
+      display: block;
+    }
+
+    .user-meta strong {
+      font-size: 0.92rem;
+      color: var(--text);
+    }
+
+    .user-meta span {
+      font-size: 0.8rem;
+      color: var(--text-faint);
+    }
+
+    .app-shell:not(.sidebar-expanded) .brand-copy,
+    .app-shell:not(.sidebar-expanded) .nav-copy,
+    .app-shell:not(.sidebar-expanded) .subnav,
+    .app-shell:not(.sidebar-expanded) .user-meta {
+      display: none;
+    }
+
+    .app-shell:not(.sidebar-expanded) .sidebar-header {
+      justify-content: center;
+    }
+
+    .app-shell:not(.sidebar-expanded) .brand {
+      display: none;
+    }
+
+    .app-shell:not(.sidebar-expanded) .sidebar-actions {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .app-shell:not(.sidebar-expanded) .nav-block {
+      padding: 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      justify-items: center;
+    }
+
+    .app-shell:not(.sidebar-expanded) .nav-item {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      justify-content: center;
+      border-radius: 14px;
+    }
+
+    .app-shell:not(.sidebar-expanded) .sidebar-footer {
+      padding-top: 0;
+    }
+
+    .app-shell:not(.sidebar-expanded) .user-status {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .subnav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-soft);
+      text-align: left;
+    }
+
+    .subnav-item:hover {
+      background: rgba(243, 239, 230, 0.52);
+      border-color: var(--line-soft);
+      transform: none;
+    }
+
+    .subnav-item.active {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: var(--line);
+      color: var(--text);
+      box-shadow: none;
+    }
+
+    .subnav-copy {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .subnav-copy strong {
+      font-size: 0.92rem;
+    }
+
+    .subnav-copy span {
+      color: var(--text-faint);
+      font-size: 0.82rem;
+      line-height: 1.4;
+    }
+
+    .tiny-pill,
+    .source-pill,
+    .meta-pill,
+    .ghost-button,
+    .primary-button,
+    .tree-toolbar button {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--line);
+      background: var(--surface-muted);
+      color: var(--text-soft);
+      padding: 8px 12px;
+      font-size: 0.84rem;
+    }
+
+    .tiny-pill.blue,
+    .source-pill.blue {
+      background: var(--brand-soft);
+      border-color: #e6cdc1;
+      color: var(--brand-deep);
+    }
+
+    .tiny-pill.green,
+    .source-pill.green {
+      background: var(--olive-soft);
+      border-color: #d6decf;
+      color: var(--olive);
+    }
+
+    .tiny-pill.yellow,
+    .source-pill.yellow {
+      background: #f6ecd4;
+      border-color: #ebd8ab;
+      color: var(--sand-deep);
+    }
+
+    .source-pill.stone,
+    .meta-pill.stone {
+      background: var(--stone);
+      border-color: #dcccbc;
+      color: var(--stone-deep);
+    }
+
+    .ghost-button,
+    .primary-button,
+    .tree-toolbar button {
+      justify-content: center;
+      background: var(--surface-muted);
+    }
+
+    .ghost-button:hover,
+    .primary-button:hover,
+    .tree-toolbar button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary-button {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fffaf6;
+    }
+
+    .main-shell {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr);
+      min-height: 0;
+      min-width: 0;
+      background: #fffdf8;
+    }
+
+    .workspace-shell {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+      gap: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    .workspace-shell.tree-collapsed {
+      grid-template-columns: 76px minmax(0, 1fr);
+    }
+
+    .tree-pane,
+    .detail-panel {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tree-pane {
+      border-right: 1px solid var(--line-soft);
+      border-radius: 0;
+      border-left: none;
+      border-top: none;
+      border-bottom: none;
+      box-shadow: none;
+      overflow: hidden;
+      transition: width 220ms ease, min-width 220ms ease;
+      background: #fbfaf6;
+    }
+
+    .pane-head {
+      padding: 18px 20px 14px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .pane-head-main {
+      flex: 1;
+      min-width: 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .pane-title {
+      font-size: 1.02rem;
+      line-height: 1.2;
+    }
+
+    .tree-toolbar {
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      gap: 8px;
+    }
+
+    .tree-toolbar button {
+      background: rgba(255, 255, 255, 0.82);
+      padding: 6px 10px;
+      font-size: 0.78rem;
+    }
+
+    .tree-body {
+      padding: 8px 10px 14px;
+      overflow: auto;
+      display: grid;
+      gap: 2px;
+    }
+
+    .workspace-shell.tree-collapsed .tree-pane {
+      align-items: stretch;
+    }
+
+    .workspace-shell.tree-collapsed .pane-head {
+      padding: 14px 10px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .workspace-shell.tree-collapsed .pane-head-main,
+    .workspace-shell.tree-collapsed .tree-body {
+      display: none;
+    }
+
+    .workspace-shell.tree-collapsed .pane-toggle-button {
+      width: 100%;
+      min-height: 44px;
+    }
+
+    .tree-node {
+      display: grid;
+      gap: 2px;
+    }
+
+    .tree-node-row {
+      display: grid;
+      grid-template-columns: 18px 20px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      padding: 7px 10px;
+      padding-left: calc(10px + var(--depth, 0) * 14px);
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      text-align: left;
+      color: var(--text-soft);
+    }
+
+    .tree-node-row:hover {
+      background: rgba(243, 239, 230, 0.56);
+      border-color: var(--line-soft);
+      transform: none;
+    }
+
+    .tree-node-row.active {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 239, 230, 0.95));
+      border-color: #d7c7b6;
+      box-shadow: none;
+      color: var(--text);
+    }
+
+    .tree-node-row.folder {
+      font-weight: 500;
+    }
+
+    .tree-toggle {
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-faint);
+      padding: 0;
+      font-size: 0.72rem;
+    }
+
+    .tree-toggle:hover {
+      background: rgba(255, 255, 255, 0.72);
+      border-color: var(--line-soft);
+      transform: none;
+    }
+
+    .tree-toggle.placeholder {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .tree-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      font-size: 0.62rem;
+      font-weight: 600;
+      background: var(--surface-muted);
+      color: var(--text-soft);
+      border: 1px solid var(--line-soft);
+    }
+
+    .tree-icon.folder {
+      background: #f6ecd4;
+      color: var(--sand-deep);
+      border-color: #ebd8ab;
+    }
+
+    .tree-icon.requirements {
+      background: var(--brand-soft);
+      color: var(--brand-deep);
+      border-color: #e6cdc1;
+    }
+
+    .tree-icon.business {
+      background: #f6ecd4;
+      color: var(--sand-deep);
+      border-color: #ebd8ab;
+    }
+
+    .tree-icon.code {
+      background: var(--olive-soft);
+      color: var(--olive);
+      border-color: #d6decf;
+    }
+
+    .tree-label {
+      min-width: 0;
+      display: block;
+    }
+
+    .tree-label strong {
+      margin: 0;
+      font-size: 0.9rem;
+      color: inherit;
+      font-weight: 500;
+      line-height: 1.25;
+    }
+
+    .tree-label span {
+      display: none;
+    }
+
+    .tree-meta {
+      font-size: 0.72rem;
+      color: var(--text-faint);
+      white-space: nowrap;
+    }
+
+    .tree-children {
+      display: grid;
+      gap: 2px;
+    }
+
+    .detail-panel {
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      overflow: auto;
+      padding: 0;
+      gap: 0;
+      background: #fffdf8;
+    }
+
+    .detail-title {
+      font-size: 1.88rem;
+      line-height: 1.12;
+    }
+
+    .detail-card {
+      padding: 0;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .detail-grid,
+    .preview-grid,
+    .child-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .preview-card,
+    .child-card {
+      padding: 18px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 244, 236, 0.88));
+    }
+
+    .detail-meta,
+    .detail-relation-row,
+    .pill-row,
+    .path-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .overview-card {
+      padding: 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid #e3d8ca;
+      background:
+        linear-gradient(180deg, rgba(248, 244, 236, 0.9), rgba(240, 235, 225, 0.94));
+    }
+
+    .excerpt,
+    .code-preview {
+      padding: 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid #e3d8ca;
+      margin-top: 14px;
+      white-space: pre-line;
+      line-height: 1.85;
+      color: #4f4841;
+      background:
+        linear-gradient(180deg, rgba(248, 244, 236, 0.9), rgba(240, 235, 225, 0.94));
+    }
+
+    .code-preview {
+      font-family: var(--font-mono);
+      white-space: pre-wrap;
+      font-size: 0.88rem;
+      line-height: 1.75;
+      background:
+        linear-gradient(180deg, rgba(245, 242, 236, 0.95), rgba(235, 229, 220, 0.9));
+    }
+
+    .content-shell {
+      display: grid;
+      gap: 0;
+    }
+
+    .content-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line-soft);
+      margin-bottom: 0;
+    }
+
+    .content-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .content-subline {
+      color: var(--text-faint);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .content-view,
+    .editor-area {
+      width: 100%;
+      min-height: calc(100vh - 110px);
+      border-radius: 0;
+      border: none;
+      background: transparent;
+      color: #4f4841;
+      box-shadow: none;
+    }
+
+    .content-view {
+      margin: 0;
+      padding: 20px;
+      overflow: auto;
+      white-space: pre-wrap;
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+      line-height: 1.75;
+    }
+
+    .content-view.markdown {
+      font-family: var(--font-mono);
+    }
+
+    .editor-area {
+      resize: vertical;
+      padding: 20px;
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+      line-height: 1.75;
+      outline: none;
+    }
+
+    .folder-empty {
+      padding: 18px;
+      border-radius: var(--radius-md);
+      border: 1px dashed #dbcbbb;
+      background: rgba(248, 244, 236, 0.72);
+      color: var(--text-soft);
+      line-height: 1.7;
+    }
+
+    .empty-state {
+      padding: 30px;
+      border-radius: var(--radius-lg);
+      border: 1px dashed #dbcbbb;
+      text-align: center;
+      color: var(--text-faint);
+      background: rgba(248, 244, 236, 0.7);
+    }
+
+    @media (max-width: 1180px) {
+      .workspace-shell,
+      .detail-grid,
+      .preview-grid,
+      .child-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .workspace-shell.tree-collapsed {
+        grid-template-columns: 1fr;
+        grid-template-rows: 76px minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .detail-panel,
+      .pane-head,
+      .tree-body {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .detail-head,
+      .launch-strip {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .tree-node-row {
+        grid-template-columns: 22px 28px minmax(0, 1fr);
+      }
+
+      .tree-meta {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell" id="appShell">
+    <aside class="panel layout-sidebar" id="layoutSidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-mark">A.P</div>
+          <div class="brand-copy">
+            <h1>ai-prd</h1>
+            <p>连接需求、业务文档和代码知识</p>
+          </div>
+        </div>
+        <div class="sidebar-actions">
+          <button class="sidebar-toggle-button" id="sidebarToggleButton" type="button" aria-label="切换导航">☰</button>
+        </div>
+      </div>
+
+      <div class="nav-block">
+        <a class="nav-item" href="ai-prd-usage-prototype.html">
+          <div class="nav-icon blue">AI</div>
+          <div class="nav-copy">
+            <strong>AI 助手</strong>
+            <p>默认会话入口</p>
+          </div>
+        </a>
+        <a class="nav-item active" href="ai-prd-knowledge-prototype.html">
+          <div class="nav-icon pink">知</div>
+          <div class="nav-copy">
+            <strong>知识库</strong>
+            <p>通过子菜单切换三类知识源</p>
+          </div>
+        </a>
+        <div class="subnav" id="knowledgeSubnav"></div>
+        <a class="nav-item" href="ai-prd-skill-prototype.html">
+          <div class="nav-icon green">技</div>
+          <div class="nav-copy">
+            <strong>Skill</strong>
+            <p>按任务模板直接启动</p>
+          </div>
+        </a>
+      </div>
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="sidebar-footer">
+        <div class="user-status">
+          <div class="user-avatar">H</div>
+          <div class="user-meta">
+            <strong>Jordan</strong>
+            <span>已登录 · Knowledge Workspace</span>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <main class="panel main-shell">
+      <section class="workspace-shell" id="workspaceShell">
+        <aside class="tree-pane">
+          <div class="pane-head">
+            <div class="pane-head-main">
+              <h2 class="pane-title" id="treeTitle"></h2>
+              <div class="tree-toolbar">
+                <div class="button-row">
+                  <button type="button" id="expandAllButton">展开目录</button>
+                  <button type="button" id="collapseAllButton">收起目录</button>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="pane-toggle-button" id="treePaneToggleButton" aria-pressed="false">收起目录</button>
+          </div>
+          <div class="tree-body" id="treeBody"></div>
+        </aside>
+
+        <section class="detail-panel" id="detailPanel"></section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const appShell = document.getElementById("appShell");
+    const sidebarToggleButton = document.getElementById("sidebarToggleButton");
+    const workspaceShell = document.getElementById("workspaceShell");
+    const typeMap = {
+      requirements: {
+        label: "需求文档",
+        chip: "blue",
+        treeIcon: "PRD",
+        summary: "同步需求按来源与业务域组织，优先展示原始文档与验收上下文。"
+      },
+      business: {
+        label: "业务文档",
+        chip: "yellow",
+        treeIcon: "BUS",
+        summary: "业务知识围绕领域、规则和术语沉淀成目录树，便于直接浏览与挂载。"
+      },
+      code: {
+        label: "代码",
+        chip: "green",
+        treeIcon: "CODE",
+        summary: "代码知识按仓库、分支和路径范围组织，目录树里直接看到关键实现对象。"
+      }
+    };
+
+    const knowledgeBases = {
+      requirements: {
+        label: "需求文档",
+        navHint: "同步需求、PRD、验收口径",
+        heroTitle: "知识库先归入主菜单，再在目录树里浏览真实对象",
+        heroCopy: "当前展示的是需求文档知识树。左侧目录树直接对应同步后的真实文件组织，用户不需要先理解抽象分类，只需要进入知识库，再切到具体子菜单，就能像浏览文档目录一样找到目标对象。",
+        rootPath: "workspace/knowledge/requirements",
+        metrics: [
+          { value: "2", label: "已同步需求文档", detail: "当前原型展示两个需求样例，目录结构保留同步来源与业务域。" },
+          { value: "2", label: "目录层级", detail: "按来源目录与业务域目录分层，避免知识对象和分类混在一起。" },
+          { value: "1", label: "默认启动动作", detail: "选中文档后可直接带着该需求发起新会话。" }
+        ],
+        defaultNodeId: "req-prd-2418",
+        tree: {
+          id: "req-root",
+          kind: "folder",
+          name: "requirements",
+          summary: "同步需求总目录，存放来自 ClickUp 或其他需求源的原始需求文档。",
+          path: "workspace/knowledge/requirements",
+          status: "已同步",
+          updatedAt: "2026-04-11 18:20",
+          owner: "产品平台",
+          cards: [
+            { title: "目录职责", body: "保留需求原始结构与基础元信息，让用户先看到真实需求文件，而不是抽象知识条目。" },
+            { title: "组织方式", body: "先按同步来源分组，再按业务域沉淀，既能追溯来源，也能按场景浏览。" }
+          ],
+          related: [
+            { tone: "stone", label: "同步源: ClickUp" },
+            { tone: "yellow", label: "可关联业务文档" },
+            { tone: "green", label: "可关联代码范围" }
+          ],
+          children: [
+            {
+              id: "req-clickup",
+              kind: "folder",
+              name: "clickup",
+              summary: "来自 ClickUp 的同步需求目录。",
+              path: "workspace/knowledge/requirements/clickup",
+              status: "已同步",
+              updatedAt: "2026-04-11 18:20",
+              owner: "产品平台",
+              cards: [
+                { title: "来源说明", body: "同步任务会保留需求编号、更新时间、维护人等元信息。" },
+                { title: "使用方式", body: "用户从目录树中选择具体 PRD 后，右侧即可查看摘录、关联文档和启动入口。" }
+              ],
+              children: [
+                {
+                  id: "req-marketing",
+                  kind: "folder",
+                  name: "marketing",
+                  summary: "营销相关需求目录。",
+                  path: "workspace/knowledge/requirements/clickup/marketing",
+                  status: "已同步",
+                  updatedAt: "2026-04-11 18:20",
+                  owner: "营销产品",
+                  children: [
+                    {
+                      id: "req-prd-2418",
+                      kind: "file",
+                      type: "requirements",
+                      name: "PRD-2418.md",
+                      title: "PRD-2418 / 现货杠杆体验金活动",
+                      summary: "来自需求同步源，包含活动目标、资格规则、状态边界和验收要求。",
+                      path: "workspace/knowledge/requirements/clickup/marketing/PRD-2418.md",
+                      updatedAt: "2026-04-11 18:20",
+                      owner: "营销产品",
+                      status: "已同步",
+                      stats: ["ClickUp", "3 个关键规则", "关联 1 个代码范围"],
+                      previewCards: [
+                        { title: "需求目标", body: "提升现货杠杆新客转化，通过体验金券引导首次参与，并控制重复领取与资格滥用。" },
+                        { title: "关键规则", body: "资格校验覆盖新客身份、活动时间窗、参与次数限制以及领取后的状态收敛要求。" },
+                        { title: "验收要点", body: "需要覆盖领取成功、冻结、核销、活动结束后未结算订单等关键场景。" },
+                        { title: "同步信息", body: "同步来源为 ClickUp，同步后落在 requirements 目录，供检索和会话挂载使用。" }
+                      ],
+                      excerptLabel: "需求摘录",
+                      excerpt: "1. 用户领取体验金后，需进入统一的优惠券生命周期，不允许脱离状态机独立流转。\n2. 活动结束时，如存在未结算订单，需明确体验金券状态如何收敛。\n3. 需要补充异常回滚、补发策略以及重复参与限制的验收说明。",
+                      related: [
+                        { tone: "yellow", label: "关联业务文档: 营销域 / 优惠券规则" },
+                        { tone: "green", label: "关联代码: release/bonus-coupon / coupon/**" },
+                        { tone: "stone", label: "推荐 Skill: 需求评审" }
+                      ],
+                      launchTitle: "基于该需求发起会话",
+                      launchDescription: "新建会话并自动挂载当前需求文档，同时带上高相关业务文档与推荐 Skill，适合直接进入需求评审。",
+                      preset: "req-prd-2418"
+                    }
+                  ]
+                },
+                {
+                  id: "req-earn",
+                  kind: "folder",
+                  name: "earn",
+                  summary: "理财相关需求目录。",
+                  path: "workspace/knowledge/requirements/clickup/earn",
+                  status: "已同步",
+                  updatedAt: "2026-04-10 14:05",
+                  owner: "理财产品",
+                  children: [
+                    {
+                      id: "req-prd-3027",
+                      kind: "file",
+                      type: "requirements",
+                      name: "PRD-3027.md",
+                      title: "PRD-3027 / Launchpool 改版",
+                      summary: "来自需求同步源，聚焦锁仓、快照、收益发放和赎回体验的改版。",
+                      path: "workspace/knowledge/requirements/clickup/earn/PRD-3027.md",
+                      updatedAt: "2026-04-10 14:05",
+                      owner: "理财产品",
+                      status: "已同步",
+                      stats: ["ClickUp", "4 个术语边界", "关联 1 个代码范围"],
+                      previewCards: [
+                        { title: "需求目标", body: "统一 Launchpool 改版后的页面文案、状态展示和收益结算口径。" },
+                        { title: "改动重点", body: "锁仓、快照、收益发放、赎回的概念定义需要与后台结算逻辑一致。" },
+                        { title: "验收要点", body: "主流程、收益时序、赎回边界和状态展示一致性是核心验收内容。" },
+                        { title: "同步信息", body: "同步来源为 ClickUp，进入 requirements 目录后可与业务文档和代码索引做关联。" }
+                      ],
+                      excerptLabel: "需求摘录",
+                      excerpt: "1. 快照余额用于收益计算，当前持仓用于页面展示。\n2. 赎回是否影响当日收益，需要结合快照时点明确口径。\n3. 页面状态不得新增后台未定义的混合态。",
+                      related: [
+                        { tone: "yellow", label: "关联业务文档: 理财域 / Launchpool 结算说明" },
+                        { tone: "green", label: "关联代码: feature/launchpool-revamp" },
+                        { tone: "stone", label: "推荐 Skill: 测试点生成" }
+                      ],
+                      launchTitle: "基于该需求发起会话",
+                      launchDescription: "新建会话并自动挂载当前需求文档，适合先生成测试点或核对术语边界。",
+                      preset: "req-prd-3027"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      business: {
+        label: "业务文档",
+        navHint: "领域规则、术语、状态机",
+        heroTitle: "业务文档作为知识库子菜单，直接以领域目录树呈现",
+        heroCopy: "当前展示的是业务文档知识树。目录层先按业务域分组，再落到具体规则文档，用户进入知识库页后切到业务文档，就能像查阅真实知识库一样浏览规则，而不是先面对三张分类卡片。",
+        rootPath: "workspace/knowledge/business-docs",
+        metrics: [
+          { value: "3", label: "领域目录", detail: "营销、理财、P2P 三个业务域放在同一棵树里管理。" },
+          { value: "3", label: "示例文档", detail: "每份文档都可以直接查看摘录、关联需求和代码范围。" },
+          { value: "1", label: "目录入口", detail: "业务人员不需要记住额外页面，只要进入知识库主菜单即可。" }
+        ],
+        defaultNodeId: "biz-coupon-rules",
+        tree: {
+          id: "biz-root",
+          kind: "folder",
+          name: "business-docs",
+          summary: "业务文档总目录，沉淀跨需求复用的领域规则、状态机与术语口径。",
+          path: "workspace/knowledge/business-docs",
+          status: "已同步",
+          updatedAt: "2026-04-11 09:40",
+          owner: "产品与运营",
+          cards: [
+            { title: "目录职责", body: "承载长期稳定的业务知识，不和单次需求文件混放，便于复用与维护。" },
+            { title: "浏览方式", body: "先看领域目录，再展开规则文档，符合文档库和知识库常见的树形心智。" }
+          ],
+          related: [
+            { tone: "blue", label: "可关联需求 PRD" },
+            { tone: "green", label: "可关联代码索引" },
+            { tone: "stone", label: "适合领域澄清" }
+          ],
+          children: [
+            {
+              id: "biz-marketing",
+              kind: "folder",
+              name: "marketing",
+              summary: "营销域文档目录。",
+              path: "workspace/knowledge/business-docs/marketing",
+              status: "已同步",
+              updatedAt: "2026-04-11 09:40",
+              owner: "交易增长 / 营销运营",
+              children: [
+                {
+                  id: "biz-coupon-rules",
+                  kind: "file",
+                  type: "business",
+                  name: "coupon-rules.md",
+                  title: "营销域 / 优惠券规则",
+                  summary: "来自业务文档知识库，沉淀优惠券生命周期、资格约束和异常回补规则。",
+                  path: "workspace/knowledge/business-docs/marketing/coupon-rules.md",
+                  updatedAt: "2026-04-11 09:40",
+                  owner: "交易增长 / 营销运营",
+                  status: "已同步",
+                  stats: ["业务规则", "状态机", "关联 1 个需求 + 1 个代码范围"],
+                  previewCards: [
+                    { title: "规则范围", body: "覆盖领取、待激活、冻结、核销、失效、补发等核心状态。" },
+                    { title: "状态机", body: "活动结束不等于券直接失效，若订单未结算则需等待终态回传或补偿任务收敛。" },
+                    { title: "业务约束", body: "资格校验、活动时间窗、补发策略和异常回滚链路都需要与需求和代码保持一致。" },
+                    { title: "维护方式", body: "作为 business-docs 知识源存在，可独立版本管理，并由产品层控制界面中的展示与挂载。" }
+                  ],
+                  excerptLabel: "文档摘录",
+                  excerpt: "1. 用户领取成功后进入待激活，不允许直接进入可使用状态。\n2. 活动结束时未结算订单对应的券，需跟随结算终态做冻结收敛。\n3. 补偿任务失败时，需进入人工审核队列并保留用户可见状态说明。",
+                  related: [
+                    { tone: "blue", label: "关联需求: PRD-2418" },
+                    { tone: "green", label: "关联代码: release/bonus-coupon / coupon/**" },
+                    { tone: "stone", label: "推荐 Skill: 需求评审" }
+                  ],
+                  launchTitle: "基于该业务文档发起会话",
+                  launchDescription: "新建会话并自动挂载当前业务文档，同时带上关联需求和代码范围，适合围绕规则边界做澄清。",
+                  preset: "biz-coupon-rules"
+                }
+              ]
+            },
+            {
+              id: "biz-earn",
+              kind: "folder",
+              name: "earn",
+              summary: "理财域文档目录。",
+              path: "workspace/knowledge/business-docs/earn",
+              status: "已同步",
+              updatedAt: "2026-04-09 17:30",
+              owner: "理财结算",
+              children: [
+                {
+                  id: "biz-launchpool-settlement",
+                  kind: "file",
+                  type: "business",
+                  name: "launchpool-settlement.md",
+                  title: "理财域 / Launchpool 结算说明",
+                  summary: "来自业务文档知识库，定义锁仓、快照、收益发放和赎回的业务口径。",
+                  path: "workspace/knowledge/business-docs/earn/launchpool-settlement.md",
+                  updatedAt: "2026-04-09 17:30",
+                  owner: "理财结算",
+                  status: "已同步",
+                  stats: ["业务规则", "术语口径", "关联 1 个需求 + 1 个代码范围"],
+                  previewCards: [
+                    { title: "术语说明", body: "快照余额与当前持仓不是一回事，收益发放只依赖快照口径。" },
+                    { title: "结算逻辑", body: "赎回是否影响收益，需要结合快照时点判断，不能由前端展示状态反推。" },
+                    { title: "展示约束", body: "页面态必须映射后台定义，不能自行发明新的混合状态。" },
+                    { title: "维护方式", body: "业务文档可独立演化，但最终在产品层面作为可挂载上下文进入会话。" }
+                  ],
+                  excerptLabel: "文档摘录",
+                  excerpt: "1. 快照余额用于收益计算，当前持仓用于页面展示。\n2. 用户在快照前赎回与快照后赎回，收益口径不同。\n3. 前端状态必须可回溯到结算状态，不得出现后台无法解释的展示。",
+                  related: [
+                    { tone: "blue", label: "关联需求: PRD-3027" },
+                    { tone: "green", label: "关联代码: feature/launchpool-revamp" },
+                    { tone: "stone", label: "推荐 Skill: 测试点生成" }
+                  ],
+                  launchTitle: "基于该业务文档发起会话",
+                  launchDescription: "新建会话并自动挂载当前业务文档，适合核对术语和收益结算口径。",
+                  preset: "biz-launchpool-settlement"
+                }
+              ]
+            },
+            {
+              id: "biz-p2p",
+              kind: "folder",
+              name: "p2p",
+              summary: "P2P 域文档目录。",
+              path: "workspace/knowledge/business-docs/p2p",
+              status: "已同步",
+              updatedAt: "2026-04-10 21:45",
+              owner: "P2P 风控",
+              children: [
+                {
+                  id: "biz-appeal-compensation",
+                  kind: "file",
+                  type: "business",
+                  name: "appeal-compensation.md",
+                  title: "P2P / 申诉补偿规则",
+                  summary: "围绕申诉审核、补偿触发、失败回补与人工介入口径沉淀的业务规则文档。",
+                  path: "workspace/knowledge/business-docs/p2p/appeal-compensation.md",
+                  updatedAt: "2026-04-10 21:45",
+                  owner: "P2P 风控",
+                  status: "已同步",
+                  stats: ["业务规则", "审核回调", "关联 1 个代码范围"],
+                  previewCards: [
+                    { title: "覆盖范围", body: "覆盖申诉详情、审核回调、补偿动作、失败重试与人工兜底。" },
+                    { title: "核心口径", body: "是否触发补偿由审核结论与订单状态共同决定，不能仅看页面操作结果。" },
+                    { title: "风险控制", body: "失败补偿要进入可追踪队列，避免静默丢单或重复补偿。" },
+                    { title: "协作方式", body: "适合和代码索引一起查看，以确认接口字段和状态流转是否对齐。" }
+                  ],
+                  excerptLabel: "文档摘录",
+                  excerpt: "1. 审核通过但订单已关闭时，不直接补偿，需根据订单终态决定是否转人工。\n2. 自动补偿失败要进入重试队列，并保留用户可见说明。\n3. 所有补偿动作都必须能回溯到审核结论与任务执行记录。",
+                  related: [
+                    { tone: "green", label: "关联代码: appeal/refund-link" },
+                    { tone: "stone", label: "推荐 Skill: 代码影响分析" }
+                  ],
+                  launchTitle: "基于该业务文档发起会话",
+                  launchDescription: "新建会话并自动挂载该规则文档，适合围绕审核回调和补偿链路做边界澄清。"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      code: {
+        label: "代码",
+        navHint: "仓库、分支、路径范围、索引",
+        heroTitle: "代码知识也回到知识库子菜单里，用目录树表达仓库结构",
+        heroCopy: "当前展示的是代码知识树。左侧不再是一串抽象对象卡片，而是更接近真实的仓库 / 分支 / 路径层级，用户先定位目录，再查看索引摘要和关键文件，整体体验会更像在知识化浏览一棵代码树。",
+        rootPath: "workspace/knowledge/code",
+        metrics: [
+          { value: "1", label: "仓库挂载", detail: "原型以 coinex-backend 为例，演示代码知识如何进入同一套知识库。" },
+          { value: "2", label: "路径范围", detail: "每个代码对象都保留分支或路径范围，右侧展示索引结果与关键符号。" },
+          { value: "2", label: "分析入口", detail: "可以直接从代码对象发起影响分析或一致性核对会话。" }
+        ],
+        defaultNodeId: "code-bonus-coupon",
+        tree: {
+          id: "code-root",
+          kind: "folder",
+          name: "code",
+          summary: "代码知识总目录，按仓库、分支和路径范围组织已挂载与已索引的代码对象。",
+          path: "workspace/knowledge/code",
+          status: "已索引",
+          updatedAt: "2026-04-11 20:10",
+          owner: "研发平台",
+          cards: [
+            { title: "目录职责", body: "把代码知识组织成可浏览的仓库树，而不是把代码对象抽成离散卡片。" },
+            { title: "展示原则", body: "用户先定位仓库和路径，再看索引内容、关键文件与抽取符号，符合工程师的浏览习惯。" }
+          ],
+          related: [
+            { tone: "blue", label: "可回链需求文档" },
+            { tone: "yellow", label: "可回链业务文档" },
+            { tone: "stone", label: "适合实现影响分析" }
+          ],
+          children: [
+            {
+              id: "code-coinex-backend",
+              kind: "folder",
+              name: "coinex-backend",
+              summary: "后端主仓库挂载目录。",
+              path: "workspace/knowledge/code/coinex-backend",
+              status: "已索引",
+              updatedAt: "2026-04-11 20:10",
+              owner: "研发平台",
+              children: [
+                {
+                  id: "code-release",
+                  kind: "folder",
+                  name: "release",
+                  summary: "发布分支目录。",
+                  path: "workspace/knowledge/code/coinex-backend/release",
+                  status: "已索引",
+                  updatedAt: "2026-04-11 20:10",
+                  owner: "后端营销服务",
+                  children: [
+                    {
+                      id: "code-bonus-coupon",
+                      kind: "file",
+                      type: "code",
+                      name: "bonus-coupon / coupon/**",
+                      title: "release/bonus-coupon / coupon/**",
+                      summary: "来自代码知识库，展示代码仓、分支、路径范围与索引结果，支撑围绕实现细节发起会话。",
+                      path: "workspace/knowledge/code/coinex-backend/release/bonus-coupon/coupon/**",
+                      updatedAt: "2026-04-11 20:10",
+                      owner: "后端营销服务",
+                      status: "已索引",
+                      stats: ["coinex-backend", "release/bonus-coupon", "2 个关键文件"],
+                      previewCards: [
+                        { title: "仓库信息", body: "代码对象展示的是仓库 + 分支/提交 + 可选路径范围，而不是一份静态说明文档。" },
+                        { title: "索引结果", body: "当前路径范围已抽取关键文件、服务名、状态机实现和热点函数，便于会话里直接引用。" },
+                        { title: "关联关系", body: "该代码范围与 PRD-2418、营销域优惠券规则存在直接关联。" },
+                        { title: "适用场景", body: "适合围绕代码影响分析、实现一致性核对、回归风险判断发起会话。" }
+                      ],
+                      treeCards: [
+                        { title: "关键文件", body: "coupon_service.py\ncoupon_status_machine.py\nbonus_coupon_handler.py\nsettlement_callback.py" },
+                        { title: "抽取符号", body: "CouponService.issue_coupon\nCouponStatusMachine.freeze\nCouponStatusMachine.settle\nSettlementCallbackHandler.handle" }
+                      ],
+                      excerptLabel: "索引预览",
+                      excerpt: "repo: coinex-backend\nbranch: release/bonus-coupon\npath_scope: coupon/**\nlast_indexed_files: 27\nlinked_prd: PRD-2418\nlinked_business_doc: 营销域 / 优惠券规则",
+                      codePreview: "def settle_coupon(order_id, coupon_id):\n    order = settlement_service.fetch(order_id)\n    if order.status == 'PENDING':\n        return CouponState.FROZEN\n    if order.status == 'SETTLED':\n        return CouponState.USED\n    return CouponState.EXPIRED",
+                      related: [
+                        { tone: "blue", label: "关联需求: PRD-2418" },
+                        { tone: "yellow", label: "关联业务文档: 营销域 / 优惠券规则" },
+                        { tone: "stone", label: "推荐 Skill: 代码影响分析" }
+                      ],
+                      launchTitle: "基于该代码范围发起会话",
+                      launchDescription: "新建会话并自动挂载当前代码上下文，同时带上高相关需求和业务文档，适合直接分析实现影响。",
+                      preset: "code-bonus-coupon"
+                    }
+                  ]
+                },
+                {
+                  id: "code-appeal",
+                  kind: "folder",
+                  name: "appeal",
+                  summary: "申诉补偿链路相关代码目录。",
+                  path: "workspace/knowledge/code/coinex-backend/appeal",
+                  status: "已索引",
+                  updatedAt: "2026-04-10 21:45",
+                  owner: "P2P 风控后端",
+                  children: [
+                    {
+                      id: "code-appeal-refund",
+                      kind: "file",
+                      type: "code",
+                      name: "refund-link",
+                      title: "appeal/refund-link",
+                      summary: "来自代码知识库，围绕 P2P 申诉补偿链路展示仓库范围、接口节点和索引结果。",
+                      path: "workspace/knowledge/code/coinex-backend/appeal/refund-link",
+                      updatedAt: "2026-04-10 21:45",
+                      owner: "P2P 风控后端",
+                      status: "已索引",
+                      stats: ["coinex-backend", "appeal/refund-link", "3 个关键节点"],
+                      previewCards: [
+                        { title: "仓库信息", body: "对象由仓库范围、路径和索引结果组成，便于定位接口实现、后台审核和补偿动作。" },
+                        { title: "索引结果", body: "当前已抽取申诉详情接口、审核回调、补偿任务三个核心节点。" },
+                        { title: "关联关系", body: "与 P2P 申诉补偿规则这份业务文档直接关联，适合做影响分析。" },
+                        { title: "适用场景", body: "适合围绕接口字段、状态映射、审核回调和补偿任务回归风险发起会话。" }
+                      ],
+                      treeCards: [
+                        { title: "关键文件", body: "appeal_detail_api.py\nappeal_review_handler.py\nrefund_dispatcher.py\ncompensation_job.py" },
+                        { title: "抽取符号", body: "AppealDetailAPI.get\nAppealReviewHandler.callback\nRefundDispatcher.dispatch\nCompensationJob.retry_failed" }
+                      ],
+                      excerptLabel: "索引预览",
+                      excerpt: "repo: coinex-backend\npath_scope: appeal/refund-link\nlast_indexed_files: 18\nlinked_business_doc: P2P / 申诉补偿规则\nfocus_nodes: API, 审核回调, 补偿任务",
+                      codePreview: "def callback(review_result):\n    if review_result.needs_compensation:\n        refund_dispatcher.dispatch(review_result.code)\n    else:\n        appeal_logger.info('no compensation required')",
+                      related: [
+                        { tone: "yellow", label: "关联业务文档: P2P / 申诉补偿规则" },
+                        { tone: "stone", label: "推荐 Skill: 代码影响分析" },
+                        { tone: "green", label: "代码范围: appeal/refund-link" }
+                      ],
+                      launchTitle: "基于该代码范围发起会话",
+                      launchDescription: "新建会话并自动挂载当前代码范围，适合围绕接口、审核后台和补偿任务做影响分析。",
+                      preset: "code-appeal-refund"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    };
+
+    const knowledgeSubnav = document.getElementById("knowledgeSubnav");
+    const treeTitle = document.getElementById("treeTitle");
+    const treeBody = document.getElementById("treeBody");
+    const detailPanel = document.getElementById("detailPanel");
+    const expandAllButton = document.getElementById("expandAllButton");
+    const collapseAllButton = document.getElementById("collapseAllButton");
+    const treePaneToggleButton = document.getElementById("treePaneToggleButton");
+    const TREE_COLLAPSE_KEY = "ai-prd-knowledge-tree-collapsed";
+
+    let activeBase = "requirements";
+    const selectedNodeByBase = {
+      requirements: knowledgeBases.requirements.defaultNodeId,
+      business: knowledgeBases.business.defaultNodeId,
+      code: knowledgeBases.code.defaultNodeId
+    };
+
+    const expandedNodes = new Set();
+    const editedContentById = {};
+    let editingNodeId = null;
+    let isSidebarExpanded = false;
+    let isTreeCollapsed = false;
+
+    function readStoredValue(key) {
+      try {
+        return window.localStorage.getItem(key);
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function storeValue(key, value) {
+      try {
+        window.localStorage.setItem(key, value);
+      } catch (error) {
+        // 文件原型环境下若无法写入 localStorage，就退回当前会话内状态。
+      }
+    }
+
+    function syncSidebarState() {
+      syncSidebarVisibility();
+    }
+
+    function syncSidebarVisibility() {
+      const isVisible = isSidebarExpanded;
+      appShell.classList.toggle("sidebar-expanded", isVisible);
+      sidebarToggleButton.textContent = isVisible ? "←" : "☰";
+      sidebarToggleButton.setAttribute("aria-label", isVisible ? "收起导航" : "展开导航");
+      sidebarToggleButton.setAttribute("aria-expanded", String(isVisible));
+    }
+
+    function closeSidebar() {
+      isSidebarExpanded = false;
+      syncSidebarVisibility();
+    }
+
+    function toggleSidebar() {
+      isSidebarExpanded = !isSidebarExpanded;
+      syncSidebarVisibility();
+    }
+
+    function syncTreePaneState() {
+      workspaceShell.classList.toggle("tree-collapsed", isTreeCollapsed);
+      treePaneToggleButton.textContent = isTreeCollapsed ? "展开目录" : "收起目录";
+      treePaneToggleButton.setAttribute("aria-pressed", String(!isTreeCollapsed));
+      treePaneToggleButton.setAttribute("title", isTreeCollapsed ? "展开知识库目录树" : "收起知识库目录树");
+    }
+
+    function countFiles(node) {
+      if (!node) {
+        return 0;
+      }
+      if (node.kind === "file") {
+        return 1;
+      }
+      return (node.children || []).reduce((total, child) => total + countFiles(child), 0);
+    }
+
+    function countFolders(node) {
+      if (!node || node.kind === "file") {
+        return 0;
+      }
+      return 1 + (node.children || []).reduce((total, child) => total + countFolders(child), 0);
+    }
+
+    function collectDefaultExpanded(node) {
+      if (!node || node.kind !== "folder") {
+        return;
+      }
+      expandedNodes.add(node.id);
+      (node.children || []).forEach((child) => {
+        if (child.kind === "folder") {
+          collectDefaultExpanded(child);
+        }
+      });
+    }
+
+    Object.values(knowledgeBases).forEach((base) => collectDefaultExpanded(base.tree));
+
+    function getBase() {
+      return knowledgeBases[activeBase];
+    }
+
+    function getSelectedNodeId() {
+      return selectedNodeByBase[activeBase];
+    }
+
+    function setSelectedNodeId(nodeId) {
+      selectedNodeByBase[activeBase] = nodeId;
+    }
+
+    function findNodeById(node, targetId) {
+      if (!node) {
+        return null;
+      }
+      if (node.id === targetId) {
+        return node;
+      }
+      for (const child of node.children || []) {
+        const result = findNodeById(child, targetId);
+        if (result) {
+          return result;
+        }
+      }
+      return null;
+    }
+
+    function findPathToNode(node, targetId, trail = []) {
+      if (!node) {
+        return null;
+      }
+
+      const nextTrail = [...trail, node];
+      if (node.id === targetId) {
+        return nextTrail;
+      }
+
+      for (const child of node.children || []) {
+        const result = findPathToNode(child, targetId, nextTrail);
+        if (result) {
+          return result;
+        }
+      }
+
+      return null;
+    }
+
+    function ensureSelectedNodeExpanded() {
+      const path = findPathToNode(getBase().tree, getSelectedNodeId()) || [];
+      path.forEach((node) => {
+        if (node.kind === "folder") {
+          expandedNodes.add(node.id);
+        }
+      });
+    }
+
+    function ensureSelectedNode() {
+      const base = getBase();
+      const selected = findNodeById(base.tree, getSelectedNodeId());
+      if (!selected) {
+        setSelectedNodeId(base.defaultNodeId || base.tree.id);
+      }
+      ensureSelectedNodeExpanded();
+    }
+
+    function renderSubnav() {
+      knowledgeSubnav.innerHTML = Object.entries(knowledgeBases).map(([key, base]) => `
+        <button class="subnav-item ${key === activeBase ? "active" : ""}" type="button" data-base="${key}">
+          <div class="subnav-copy">
+            <strong>${base.label}</strong>
+            <span>${base.navHint}</span>
+          </div>
+          <span class="meta-pill stone">${countFiles(base.tree)} 项</span>
+        </button>
+      `).join("");
+
+      knowledgeSubnav.querySelectorAll(".subnav-item").forEach((button) => {
+        button.addEventListener("click", () => {
+          activeBase = button.dataset.base;
+          ensureSelectedNode();
+          renderAll();
+        });
+      });
+    }
+
+    function renderTreeHeader() {
+      const base = getBase();
+      treeTitle.textContent = `${base.label}目录`;
+    }
+
+    function renderTreeNode(node, depth) {
+      const isFolder = node.kind === "folder";
+      const isExpanded = expandedNodes.has(node.id);
+      const isActive = node.id === getSelectedNodeId();
+      const nodeType = node.type || activeBase;
+      const metaText = isFolder
+        ? `${countFiles(node)} 个文件`
+        : node.status || typeMap[nodeType].label;
+      const iconClass = isFolder ? "folder" : nodeType;
+      const iconLabel = isFolder ? "DIR" : typeMap[nodeType].treeIcon;
+      const title = isFolder ? node.name : (node.name || node.title);
+      const subtitle = "";
+
+      return `
+        <div class="tree-node">
+          <div class="tree-node-row ${isActive ? "active" : ""} ${isFolder ? "folder" : "file"}" style="--depth: ${depth};" data-select-id="${node.id}">
+            <button class="tree-toggle ${isFolder ? "" : "placeholder"}" type="button" data-toggle-id="${node.id}">
+              ${isFolder ? (isExpanded ? "-" : "+") : "+"}
+            </button>
+            <div class="tree-icon ${iconClass}">${iconLabel}</div>
+            <div class="tree-label">
+              <strong>${title}</strong>
+              <span>${subtitle}</span>
+            </div>
+            <div class="tree-meta">${metaText}</div>
+          </div>
+          ${isFolder && isExpanded ? `
+            <div class="tree-children">
+              ${(node.children || []).map((child) => renderTreeNode(child, depth + 1)).join("")}
+            </div>
+          ` : ""}
+        </div>
+      `;
+    }
+
+    function renderTree() {
+      const base = getBase();
+      treeBody.innerHTML = renderTreeNode(base.tree, 0);
+
+      treeBody.querySelectorAll("[data-toggle-id]").forEach((button) => {
+        if (button.classList.contains("placeholder")) {
+          return;
+        }
+        button.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const nodeId = button.dataset.toggleId;
+          if (expandedNodes.has(nodeId)) {
+            expandedNodes.delete(nodeId);
+          } else {
+            expandedNodes.add(nodeId);
+          }
+          renderTree();
+        });
+      });
+
+      treeBody.querySelectorAll("[data-select-id]").forEach((row) => {
+        row.addEventListener("click", () => {
+          const nodeId = row.dataset.selectId;
+          setSelectedNodeId(nodeId);
+          ensureSelectedNodeExpanded();
+          renderTree();
+          renderDetail();
+        });
+      });
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function getFileLanguage(node) {
+      if (node.contentType) {
+        return node.contentType;
+      }
+      return node.type === "code" ? "code" : "markdown";
+    }
+
+    function buildDefaultContent(node) {
+      if (node.content) {
+        return node.content;
+      }
+
+      if (node.type === "code") {
+        return node.codePreview || node.excerpt || "";
+      }
+
+      const sections = [
+        `# ${node.title}`,
+        "",
+        node.summary || "",
+        "",
+        "## 内容摘录",
+        node.excerpt || "暂无内容"
+      ];
+
+      if (node.related && node.related.length) {
+        sections.push("", "## 关联上下文");
+        node.related.forEach((item) => {
+          sections.push(`- ${item.label}`);
+        });
+      }
+
+      return sections.join("\n");
+    }
+
+    function getNodeContent(node) {
+      return editedContentById[node.id] ?? buildDefaultContent(node);
+    }
+
+    function bindFileEditorEvents(node) {
+      const headerEditButton = detailPanel.querySelector("#editFileButtonHeader");
+      const editButton = detailPanel.querySelector("#editFileButton");
+      const saveButton = detailPanel.querySelector("#saveFileButton");
+      const cancelButton = detailPanel.querySelector("#cancelFileButton");
+      const editor = detailPanel.querySelector("#fileEditor");
+
+      if (headerEditButton) {
+        headerEditButton.addEventListener("click", () => {
+          if (editingNodeId === node.id) {
+            return;
+          }
+          editingNodeId = node.id;
+          renderFileDetail(node);
+        });
+      }
+
+      if (editButton) {
+        editButton.addEventListener("click", () => {
+          editingNodeId = node.id;
+          renderFileDetail(node);
+        });
+      }
+
+      if (saveButton && editor) {
+        saveButton.addEventListener("click", () => {
+          editedContentById[node.id] = editor.value;
+          editingNodeId = null;
+          renderFileDetail(node);
+        });
+      }
+
+      if (cancelButton) {
+        cancelButton.addEventListener("click", () => {
+          editingNodeId = null;
+          renderFileDetail(node);
+        });
+      }
+    }
+
+    function renderFolderDetail(node) {
+      const childNodes = node.children || [];
+
+      detailPanel.innerHTML = `
+        <div class="detail-head">
+          <div>
+            <h2 class="detail-title">${node.title || node.name}</h2>
+            <div class="content-subline" style="margin-top: 6px;">${node.path}</div>
+          </div>
+        </div>
+
+        <article class="detail-card">
+          <div class="folder-empty">这是目录，不是文件。请在左侧目录树中选择一个具体文件查看内容；目录仅用于展开、收起和定位文件。</div>
+        </article>
+
+        <article class="detail-card">
+          <h3 class="section-label">当前目录内容</h3>
+          <div class="child-grid" style="margin-top: 14px;">
+            ${childNodes.length ? childNodes.map((child) => `
+              <div class="child-card">
+                <strong>${child.name || child.title}</strong>
+                <p>${child.kind === "folder" ? child.path : (child.title || child.path)}</p>
+                <p class="meta-line" style="margin-top: 10px;">${child.kind === "folder" ? `${countFiles(child)} 个文件` : (child.status || "可查看")}</p>
+              </div>
+            `).join("") : `<div class="empty-state">当前目录下还没有内容。</div>`}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderFileDetail(node) {
+      const contentType = getFileLanguage(node);
+      const isEditing = editingNodeId === node.id;
+      const content = getNodeContent(node);
+      const escapedContent = escapeHtml(content);
+
+      detailPanel.innerHTML = `
+        <article class="detail-card">
+          <div class="content-shell">
+            <div class="content-toolbar">
+              <div class="content-subline">${contentType === "code" ? "代码文件" : "Markdown 文件"} · ${node.updatedAt} · ${node.path}</div>
+              <div class="content-actions">
+                ${isEditing ? `
+                  <button type="button" class="ghost-button" id="cancelFileButton">取消</button>
+                  <button type="button" class="primary-button" id="saveFileButton">保存修改</button>
+                ` : `
+                  <button type="button" class="ghost-button" id="editFileButton">编辑内容</button>
+                `}
+              </div>
+            </div>
+            ${isEditing
+              ? `<textarea class="editor-area" id="fileEditor">${escapedContent}</textarea>`
+              : `<pre class="content-view ${contentType}">${escapedContent}</pre>`
+            }
+          </div>
+        </article>
+      `;
+
+      bindFileEditorEvents(node);
+    }
+
+    function renderDetail() {
+      const node = findNodeById(getBase().tree, getSelectedNodeId());
+      if (!node) {
+        detailPanel.innerHTML = `<div class="empty-state">未找到当前节点，请重新选择目录树中的对象。</div>`;
+        return;
+      }
+
+      if (node.kind === "folder") {
+        renderFolderDetail(node);
+        return;
+      }
+
+      renderFileDetail(node);
+    }
+
+    function expandAllFolders(node) {
+      if (!node || node.kind !== "folder") {
+        return;
+      }
+      expandedNodes.add(node.id);
+      (node.children || []).forEach(expandAllFolders);
+    }
+
+    function collapseAllFolders(node, keepId) {
+      if (!node || node.kind !== "folder") {
+        return;
+      }
+      if (node.id !== keepId) {
+        expandedNodes.delete(node.id);
+      }
+      (node.children || []).forEach((child) => collapseAllFolders(child, keepId));
+    }
+
+    function renderAll() {
+      renderSubnav();
+      renderTreeHeader();
+      renderTree();
+      renderDetail();
+    }
+
+    isSidebarExpanded = false;
+    isTreeCollapsed = readStoredValue(TREE_COLLAPSE_KEY) === "true";
+
+    sidebarToggleButton.addEventListener("click", toggleSidebar);
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeSidebar();
+      }
+    });
+
+    treePaneToggleButton.addEventListener("click", () => {
+      isTreeCollapsed = !isTreeCollapsed;
+      storeValue(TREE_COLLAPSE_KEY, String(isTreeCollapsed));
+      syncTreePaneState();
+    });
+
+    expandAllButton.addEventListener("click", () => {
+      expandAllFolders(getBase().tree);
+      renderTree();
+    });
+
+    collapseAllButton.addEventListener("click", () => {
+      const base = getBase();
+      collapseAllFolders(base.tree, base.tree.id);
+      expandedNodes.add(base.tree.id);
+      setSelectedNodeId(base.tree.id);
+      renderTree();
+      renderDetail();
+    });
+
+    syncSidebarState();
+    syncTreePaneState();
+    ensureSelectedNode();
+    renderAll();
+  </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+
+# Runtime data written by the app and its tests
+/workspace/
+
+# Local configuration
+.env
+.claude/settings.local.json
+
+# The frontend uses pnpm; this npm lockfile is out of date
+source/frontend/package-lock.json
+
+.DS_Store

@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ai-prd Skill 原型</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f2eb;
+      --surface: #fbfaf6;
+      --surface-muted: #f2efe7;
+      --text: #141413;
+      --text-soft: #5f5d58;
+      --text-faint: #8c8880;
+      --line: #e6e2d7;
+      --line-soft: #f0ece3;
+      --brand: #5d6a51;
+      --brand-deep: #4a5641;
+      --brand-soft: #e5ebdd;
+      --signal: #c96442;
+      --signal-soft: #f2ddd4;
+      --sand: #f4e7c8;
+      --sand-deep: #8d6f33;
+      --shadow-lg: 0 18px 40px rgba(20, 20, 19, 0.06);
+      --shadow-md: 0 8px 26px rgba(20, 20, 19, 0.05);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-pill: 999px;
+      --rail-width: 56px;
+      --sidebar-width: 288px;
+      --shell-padding: clamp(8px, 1.2vw, 20px);
+      --font-serif: "Iowan Old Style", "Palatino Linotype", "Songti SC", "Noto Serif SC", Georgia, serif;
+      --font-sans: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      --font-mono: "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top right, rgba(93, 106, 81, 0.08), transparent 26%),
+        radial-gradient(circle at bottom left, rgba(201, 100, 66, 0.08), transparent 26%),
+        var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+    }
+
+    body {
+      padding: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font: inherit;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, color 180ms ease;
+    }
+
+    .app-shell {
+      position: relative;
+      display: grid;
+      grid-template-columns: var(--rail-width) minmax(0, 1fr);
+      gap: 0;
+      width: 100vw;
+      min-height: 100vh;
+    }
+
+    .app-shell.sidebar-expanded {
+      grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    }
+
+    .panel {
+      background: rgba(251, 250, 246, 0.9);
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    .layout-sidebar {
+      position: relative;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 14px 12px 16px;
+      min-height: 100vh;
+      overflow: hidden;
+      background: linear-gradient(180deg, #faf8f2, #f7f4ec);
+      border-right: 1px solid var(--line-soft);
+      transition: transform 220ms ease, box-shadow 220ms ease, opacity 180ms ease, visibility 180ms ease;
+    }
+
+    .app-shell:not(.sidebar-expanded) .layout-sidebar {
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+
+    .app-shell.sidebar-expanded .main-shell {
+      border-left: none;
+    }
+
+    .sidebar-toggle-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--text-soft);
+      box-shadow: var(--shadow-md);
+    }
+
+    .sidebar-toggle-button {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      font-size: 1rem;
+    }
+
+    .sidebar-header,
+    .detail-head,
+    .tree-toolbar,
+    .button-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .sidebar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .sidebar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: #faf9f5;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      background: #2f2d2b;
+    }
+
+    .brand-copy h1,
+    .pane-title,
+    .detail-title,
+    .section-label {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-weight: 500;
+    }
+
+    .brand-copy h1 {
+      font-size: 1.38rem;
+    }
+
+    .brand-copy p,
+    .nav-copy p,
+    .meta-line,
+    .child-card p {
+      margin: 0;
+      color: var(--text-soft);
+      line-height: 1.65;
+      font-size: 0.96rem;
+    }
+
+    .nav-block,
+    .tree-pane,
+    .detail-panel,
+    .detail-card,
+    .child-card {
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+    }
+
+    .nav-block {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      background: rgba(251, 250, 246, 0.86);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      color: var(--text-soft);
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+    }
+
+    .nav-item:hover {
+      transform: translateX(2px);
+    }
+
+    .nav-item.active {
+      background: var(--surface-muted);
+      border-color: var(--line);
+      color: var(--text);
+    }
+
+    .sidebar-spacer {
+      min-height: 8px;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 8px;
+    }
+
+    .user-status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 8px;
+      border-radius: 16px;
+      color: var(--text-soft);
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #2f2d2b;
+      color: #fffaf4;
+      font-weight: 600;
+      flex: 0 0 auto;
+    }
+
+    .user-meta strong,
+    .user-meta span {
+      display: block;
+    }
+
+    .user-meta strong {
+      font-size: 0.92rem;
+      color: var(--text);
+    }
+
+    .user-meta span {
+      font-size: 0.8rem;
+      color: var(--text-faint);
+    }
+
+    .app-shell:not(.sidebar-expanded) .brand-copy,
+    .app-shell:not(.sidebar-expanded) .nav-copy,
+    .app-shell:not(.sidebar-expanded) .user-meta {
+      display: none;
+    }
+
+    .app-shell:not(.sidebar-expanded) .sidebar-header {
+      justify-content: center;
+    }
+
+    .app-shell:not(.sidebar-expanded) .brand {
+      display: none;
+    }
+
+    .app-shell:not(.sidebar-expanded) .sidebar-actions {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .app-shell:not(.sidebar-expanded) .nav-block {
+      padding: 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      justify-items: center;
+    }
+
+    .app-shell:not(.sidebar-expanded) .nav-item {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      justify-content: center;
+      border-radius: 14px;
+    }
+
+    .app-shell:not(.sidebar-expanded) .sidebar-footer {
+      padding-top: 0;
+    }
+
+    .app-shell:not(.sidebar-expanded) .user-status {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .nav-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 0.78rem;
+      font-weight: 600;
+      flex: 0 0 auto;
+    }
+
+    .nav-icon.blue {
+      background: var(--signal-soft);
+      color: var(--signal);
+    }
+
+    .nav-icon.pink {
+      background: #f2e7d3;
+      color: #866633;
+    }
+
+    .nav-icon.green {
+      background: var(--brand-soft);
+      color: var(--brand-deep);
+    }
+
+    .nav-copy strong,
+    .child-card strong {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .ghost-button,
+    .primary-button,
+    .tree-toolbar button,
+    .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 12px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--line);
+      background: var(--surface-muted);
+      color: var(--text-soft);
+      font-size: 0.84rem;
+    }
+
+    .ghost-button,
+    .primary-button,
+    .tree-toolbar button {
+      justify-content: center;
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+    }
+
+    .ghost-button:hover,
+    .primary-button:hover,
+    .tree-toolbar button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary-button {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fffdf8;
+    }
+
+    .meta-pill {
+      background: rgba(229, 235, 221, 0.86);
+      border-color: #d7dfd0;
+      color: var(--brand-deep);
+    }
+
+    .main-shell {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      min-height: 0;
+      min-width: 0;
+    }
+
+    .workspace-shell {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 380px minmax(0, 1fr);
+      gap: 20px;
+      padding: 18px;
+      height: 100%;
+    }
+
+    .tree-pane,
+    .detail-panel {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tree-pane {
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(245, 244, 237, 0.92));
+    }
+
+    .pane-head {
+      padding: 18px;
+      display: grid;
+      gap: 10px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .pane-title {
+      font-size: 1.12rem;
+      line-height: 1.2;
+    }
+
+    .tree-toolbar {
+      flex-wrap: wrap;
+      justify-content: flex-start;
+    }
+
+    .tree-body {
+      padding: 16px 14px 18px;
+      overflow: auto;
+      display: grid;
+      gap: 6px;
+    }
+
+    .tree-node {
+      display: grid;
+      gap: 6px;
+    }
+
+    .tree-node-row {
+      display: grid;
+      grid-template-columns: 24px 30px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 10px 12px;
+      padding-left: calc(12px + var(--depth, 0) * 18px);
+      border-radius: 14px;
+      border: 1px solid transparent;
+      background: transparent;
+      text-align: left;
+      color: var(--text-soft);
+    }
+
+    .tree-node-row:hover {
+      background: rgba(242, 239, 231, 0.92);
+      border-color: var(--line-soft);
+      transform: translateX(1px);
+    }
+
+    .tree-node-row.active {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(229, 235, 221, 0.9));
+      border-color: #c9d5bd;
+      box-shadow: 0 0 0 1px rgba(201, 213, 189, 0.72);
+      color: var(--text);
+    }
+
+    .tree-toggle {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-faint);
+      padding: 0;
+    }
+
+    .tree-toggle:hover {
+      background: rgba(255, 255, 255, 0.72);
+      border-color: var(--line-soft);
+      transform: none;
+    }
+
+    .tree-toggle.placeholder {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .tree-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid var(--line-soft);
+      background: var(--surface-muted);
+      color: var(--text-soft);
+    }
+
+    .tree-icon.folder {
+      background: var(--sand);
+      color: var(--sand-deep);
+      border-color: #ead8ab;
+    }
+
+    .tree-icon.file {
+      background: var(--brand-soft);
+      color: var(--brand-deep);
+      border-color: #d7dfd0;
+    }
+
+    .tree-label {
+      min-width: 0;
+      display: grid;
+      gap: 2px;
+    }
+
+    .tree-label strong {
+      margin: 0;
+      font-size: 0.94rem;
+      color: inherit;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .tree-label span {
+      font-size: 0.82rem;
+      color: var(--text-faint);
+      line-height: 1.35;
+    }
+
+    .tree-meta {
+      font-size: 0.78rem;
+      color: var(--text-faint);
+      white-space: nowrap;
+    }
+
+    .tree-children {
+      display: grid;
+      gap: 6px;
+    }
+
+    .detail-panel {
+      overflow: auto;
+      padding: 18px;
+      gap: 12px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(245, 244, 237, 0.92));
+    }
+
+    .detail-title {
+      font-size: 1.72rem;
+      line-height: 1.12;
+    }
+
+    .detail-card {
+      padding: 18px;
+    }
+
+    .content-shell {
+      display: grid;
+      gap: 10px;
+    }
+
+    .content-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .content-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .content-subline {
+      color: var(--text-faint);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .content-view,
+    .editor-area {
+      width: 100%;
+      min-height: 620px;
+      border-radius: var(--radius-md);
+      border: 1px solid #ddd0c1;
+      background:
+        linear-gradient(180deg, rgba(238, 229, 218, 0.72), rgba(255, 255, 255, 0.94));
+      color: #4f4841;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    }
+
+    .content-view {
+      margin: 0;
+      padding: 20px;
+      overflow: auto;
+      white-space: pre-wrap;
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+      line-height: 1.75;
+    }
+
+    .editor-area {
+      resize: vertical;
+      padding: 18px 20px;
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+      line-height: 1.75;
+      outline: none;
+    }
+
+    .folder-empty {
+      padding: 18px;
+      border-radius: var(--radius-md);
+      border: 1px dashed #dbcbbb;
+      background: rgba(245, 244, 237, 0.72);
+      color: var(--text-soft);
+      line-height: 1.7;
+    }
+
+    .child-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .child-card {
+      padding: 18px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(245, 244, 237, 0.86));
+    }
+
+    .empty-state {
+      padding: 30px;
+      border-radius: var(--radius-lg);
+      border: 1px dashed #dbcbbb;
+      text-align: center;
+      color: var(--text-faint);
+      background: rgba(245, 244, 237, 0.7);
+    }
+
+    @media (max-width: 1120px) {
+      .workspace-shell,
+      .child-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .detail-panel,
+      .pane-head,
+      .tree-body {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .detail-head {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .tree-node-row {
+        grid-template-columns: 22px 28px minmax(0, 1fr);
+      }
+
+      .tree-meta {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell" id="appShell">
+    <aside class="panel layout-sidebar" id="layoutSidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-mark">A.P</div>
+          <div class="brand-copy">
+            <h1>ai-prd</h1>
+            <p>连接需求、业务文档和代码知识</p>
+          </div>
+        </div>
+        <div class="sidebar-actions">
+          <button class="sidebar-toggle-button" id="sidebarToggleButton" type="button" aria-label="切换导航">☰</button>
+        </div>
+      </div>
+
+      <div class="nav-block">
+        <a class="nav-item" href="ai-prd-usage-prototype.html">
+          <div class="nav-icon blue">AI</div>
+          <div class="nav-copy">
+            <strong>AI 助手</strong>
+            <p>默认会话入口</p>
+          </div>
+        </a>
+        <a class="nav-item" href="ai-prd-knowledge-prototype.html">
+          <div class="nav-icon pink">知</div>
+          <div class="nav-copy">
+            <strong>知识库</strong>
+            <p>从内容发起会话</p>
+          </div>
+        </a>
+        <a class="nav-item active" href="ai-prd-skill-prototype.html">
+          <div class="nav-icon green">技</div>
+          <div class="nav-copy">
+            <strong>Skill</strong>
+            <p>浏览 Skill 文件</p>
+          </div>
+        </a>
+      </div>
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="sidebar-footer">
+        <div class="user-status">
+          <div class="user-avatar">H</div>
+          <div class="user-meta">
+            <strong>Jordan</strong>
+            <span>已登录 · Skill Workspace</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="panel main-shell">
+      <section class="workspace-shell">
+        <aside class="tree-pane">
+          <div class="pane-head">
+            <h2 class="pane-title">Skill 目录</h2>
+            <div class="tree-toolbar">
+              <div class="button-row">
+                <button type="button" id="expandAllButton">展开目录</button>
+                <button type="button" id="collapseAllButton">收起目录</button>
+              </div>
+            </div>
+          </div>
+          <div class="tree-body" id="treeBody"></div>
+        </aside>
+
+        <section class="detail-panel" id="detailPanel"></section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const appShell = document.getElementById("appShell");
+    const sidebarToggleButton = document.getElementById("sidebarToggleButton");
+    const skillTree = {
+      id: "skills-root",
+      kind: "folder",
+      name: "skills",
+      path: "workspace/.claude/skills",
+      children: [
+        {
+          id: "skills-product",
+          kind: "folder",
+          name: "product",
+          path: "workspace/.claude/skills/product",
+          children: [
+            {
+              id: "skill-requirement-review",
+              kind: "file",
+              name: "requirement-review.md",
+              title: "需求评审",
+              path: "workspace/.claude/skills/product/requirement-review.md",
+              updatedAt: "2026-04-12 10:20",
+              content: `# 需求评审
+
+## 适用场景
+- 需求评审会前
+- 活动规则改版
+- 文档补充验收口径
+
+## 默认输入
+- 需求文档
+- 业务规则文档
+- 如有需要可补充代码范围
+
+## 输出结构
+1. 结论
+2. 歧义点
+3. 风险点
+4. 待补充项
+
+## 执行要点
+- 先判断范围和目标是否清楚
+- 再核对规则、状态和异常收敛
+- 最后给出可以直接带去评审会的清单
+
+## 启动方式
+\`@skill requirement-review\``
+            },
+            {
+              id: "skill-test-generator",
+              kind: "file",
+              name: "test-generator.md",
+              title: "测试点生成",
+              path: "workspace/.claude/skills/product/test-generator.md",
+              updatedAt: "2026-04-12 10:25",
+              content: `# 测试点生成
+
+## 适用场景
+- 提测前梳理测试点
+- 需求变更后的回归分析
+- 接口或状态流改动后的边界覆盖
+
+## 默认输入
+- 需求文档
+- 业务规则
+- 可选代码分支或接口说明
+
+## 输出结构
+1. 主流程测试点
+2. 异常流程测试点
+3. 边界条件测试点
+4. 优先级标记
+
+## 执行要点
+- 先抽状态和关键节点
+- 再补失败、超时、回滚、重复操作
+- 输出可直接复制到测试单的清单`
+            }
+          ]
+        },
+        {
+          id: "skills-engineering",
+          kind: "folder",
+          name: "engineering",
+          path: "workspace/.claude/skills/engineering",
+          children: [
+            {
+              id: "skill-impact-analysis",
+              kind: "file",
+              name: "impact-analysis.md",
+              title: "代码影响分析",
+              path: "workspace/.claude/skills/engineering/impact-analysis.md",
+              updatedAt: "2026-04-12 10:28",
+              content: `# 代码影响分析
+
+## 适用场景
+- 规则改动后的代码回归判断
+- 接口字段变化评估
+- 补偿流程和异步任务联动分析
+
+## 默认输入
+- 代码分支
+- 接口说明
+- 规则或业务文档
+
+## 输出结构
+1. 影响模块
+2. 影响接口或字段
+3. 状态流转变化
+4. 回归建议
+
+## 执行要点
+- 从规则或需求变化反推模块
+- 同时检查接口、后台、任务链路
+- 结果必须落到可执行回归范围`
+            }
+          ]
+        },
+        {
+          id: "skills-shared",
+          kind: "folder",
+          name: "shared",
+          path: "workspace/.claude/skills/shared",
+          children: [
+            {
+              id: "skill-style-guide",
+              kind: "file",
+              name: "style-guide.md",
+              title: "Skill 编写规范",
+              path: "workspace/.claude/skills/shared/style-guide.md",
+              updatedAt: "2026-04-12 10:32",
+              content: `# Skill 编写规范
+
+## 文件结构
+- 标题
+- 适用场景
+- 默认输入
+- 输出结构
+- 执行要点
+
+## 编写原则
+- 先说这个 Skill 是做什么的
+- 再说需要哪些输入
+- 再说会产出什么
+- 避免大段解释性废话
+- 能写成短段落，就不要堆标签和头部说明
+
+## 界面原则
+- 左侧目录树找文件
+- 右侧直接看文件内容
+- 编辑动作应就近出现`
+            }
+          ]
+        }
+      ]
+    };
+
+    const treeBody = document.getElementById("treeBody");
+    const detailPanel = document.getElementById("detailPanel");
+    const expandAllButton = document.getElementById("expandAllButton");
+    const collapseAllButton = document.getElementById("collapseAllButton");
+
+    let selectedNodeId = "skill-requirement-review";
+    let editingNodeId = null;
+    let isSidebarExpanded = false;
+    const editedContentById = {};
+    const expandedNodes = new Set();
+
+    function syncSidebarState() {
+      syncSidebarVisibility();
+    }
+
+    function syncSidebarVisibility() {
+      const isVisible = isSidebarExpanded;
+      appShell.classList.toggle("sidebar-expanded", isVisible);
+      sidebarToggleButton.textContent = isVisible ? "←" : "☰";
+      sidebarToggleButton.setAttribute("aria-label", isVisible ? "收起导航" : "展开导航");
+      sidebarToggleButton.setAttribute("aria-expanded", String(isVisible));
+    }
+
+    function closeSidebar() {
+      isSidebarExpanded = false;
+      syncSidebarVisibility();
+    }
+
+    function toggleSidebar() {
+      isSidebarExpanded = !isSidebarExpanded;
+      syncSidebarVisibility();
+    }
+
+    function countFiles(node) {
+      if (node.kind === "file") {
+        return 1;
+      }
+      return (node.children || []).reduce((total, child) => total + countFiles(child), 0);
+    }
+
+    function findNodeById(node, targetId) {
+      if (node.id === targetId) {
+        return node;
+      }
+      for (const child of node.children || []) {
+        const result = findNodeById(child, targetId);
+        if (result) {
+          return result;
+        }
+      }
+      return null;
+    }
+
+    function findPathToNode(node, targetId, trail = []) {
+      const nextTrail = [...trail, node];
+      if (node.id === targetId) {
+        return nextTrail;
+      }
+      for (const child of node.children || []) {
+        const result = findPathToNode(child, targetId, nextTrail);
+        if (result) {
+          return result;
+        }
+      }
+      return null;
+    }
+
+    function ensureSelectedExpanded() {
+      const path = findPathToNode(skillTree, selectedNodeId) || [];
+      path.forEach((node) => {
+        if (node.kind === "folder") {
+          expandedNodes.add(node.id);
+        }
+      });
+    }
+
+    function renderTreeNode(node, depth) {
+      const isFolder = node.kind === "folder";
+      const isExpanded = expandedNodes.has(node.id);
+      const isActive = node.id === selectedNodeId;
+      const title = node.name;
+      const subtitle = isFolder ? node.path : (node.title || node.path);
+      const meta = isFolder ? `${countFiles(node)} 个文件` : "Markdown";
+
+      return `
+        <div class="tree-node">
+          <div class="tree-node-row ${isActive ? "active" : ""}" style="--depth: ${depth};" data-select-id="${node.id}">
+            <button class="tree-toggle ${isFolder ? "" : "placeholder"}" type="button" data-toggle-id="${node.id}">
+              ${isFolder ? (isExpanded ? "-" : "+") : "+"}
+            </button>
+            <div class="tree-icon ${isFolder ? "folder" : "file"}">${isFolder ? "DIR" : "MD"}</div>
+            <div class="tree-label">
+              <strong>${title}</strong>
+              <span>${subtitle}</span>
+            </div>
+            <div class="tree-meta">${meta}</div>
+          </div>
+          ${isFolder && isExpanded ? `
+            <div class="tree-children">
+              ${(node.children || []).map((child) => renderTreeNode(child, depth + 1)).join("")}
+            </div>
+          ` : ""}
+        </div>
+      `;
+    }
+
+    function renderTree() {
+      treeBody.innerHTML = renderTreeNode(skillTree, 0);
+
+      treeBody.querySelectorAll("[data-toggle-id]").forEach((button) => {
+        if (button.classList.contains("placeholder")) {
+          return;
+        }
+        button.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const nodeId = button.dataset.toggleId;
+          if (expandedNodes.has(nodeId)) {
+            expandedNodes.delete(nodeId);
+          } else {
+            expandedNodes.add(nodeId);
+          }
+          renderTree();
+        });
+      });
+
+      treeBody.querySelectorAll("[data-select-id]").forEach((row) => {
+        row.addEventListener("click", () => {
+          selectedNodeId = row.dataset.selectId;
+          ensureSelectedExpanded();
+          renderTree();
+          renderDetail();
+        });
+      });
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function getNodeContent(node) {
+      return editedContentById[node.id] ?? node.content ?? "";
+    }
+
+    function bindEditorEvents(node) {
+      const headerEditButton = detailPanel.querySelector("#editFileButtonHeader");
+      const editButton = detailPanel.querySelector("#editFileButton");
+      const saveButton = detailPanel.querySelector("#saveFileButton");
+      const cancelButton = detailPanel.querySelector("#cancelFileButton");
+      const editor = detailPanel.querySelector("#fileEditor");
+
+      if (headerEditButton) {
+        headerEditButton.addEventListener("click", () => {
+          if (editingNodeId === node.id) {
+            return;
+          }
+          editingNodeId = node.id;
+          renderDetail();
+        });
+      }
+
+      if (editButton) {
+        editButton.addEventListener("click", () => {
+          editingNodeId = node.id;
+          renderDetail();
+        });
+      }
+
+      if (saveButton && editor) {
+        saveButton.addEventListener("click", () => {
+          editedContentById[node.id] = editor.value;
+          editingNodeId = null;
+          renderDetail();
+        });
+      }
+
+      if (cancelButton) {
+        cancelButton.addEventListener("click", () => {
+          editingNodeId = null;
+          renderDetail();
+        });
+      }
+    }
+
+    function renderFolderDetail(node) {
+      const childNodes = node.children || [];
+      detailPanel.innerHTML = `
+        <div class="detail-head">
+          <div>
+            <h2 class="detail-title">${node.name}</h2>
+            <div class="content-subline" style="margin-top: 6px;">${node.path}</div>
+          </div>
+        </div>
+
+        <article class="detail-card">
+          <div class="folder-empty">这是目录，不是文件。请在左侧目录树中选择一个具体 Skill 文件查看内容。</div>
+        </article>
+
+        <article class="detail-card">
+          <h3 class="section-label">当前目录内容</h3>
+          <div class="child-grid">
+            ${childNodes.length ? childNodes.map((child) => `
+              <div class="child-card">
+                <strong>${child.name}</strong>
+                <p>${child.kind === "folder" ? child.path : (child.title || child.path)}</p>
+                <p class="meta-line" style="margin-top: 10px;">${child.kind === "folder" ? `${countFiles(child)} 个文件` : "Markdown 文件"}</p>
+              </div>
+            `).join("") : `<div class="empty-state">当前目录下还没有内容。</div>`}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderFileDetail(node) {
+      const isEditing = editingNodeId === node.id;
+      const content = getNodeContent(node);
+      const escapedContent = escapeHtml(content);
+
+      detailPanel.innerHTML = `
+        <div class="detail-head">
+          <div>
+            <h2 class="detail-title">${node.name}</h2>
+            <div class="content-subline" style="margin-top: 6px;">${node.path}</div>
+          </div>
+          <div class="button-row">
+            <button type="button" class="primary-button" id="editFileButtonHeader">${isEditing ? "编辑中" : "编辑内容"}</button>
+          </div>
+        </div>
+
+        <article class="detail-card">
+          <div class="content-shell">
+            <div class="content-toolbar">
+              <div class="content-subline">Markdown 文件 · ${node.updatedAt}</div>
+              <div class="content-actions">
+                ${isEditing ? `
+                  <button type="button" class="ghost-button" id="cancelFileButton">取消</button>
+                  <button type="button" class="primary-button" id="saveFileButton">保存修改</button>
+                ` : `
+                  <button type="button" class="ghost-button" id="editFileButton">编辑内容</button>
+                `}
+              </div>
+            </div>
+            ${isEditing
+              ? `<textarea class="editor-area" id="fileEditor">${escapedContent}</textarea>`
+              : `<pre class="content-view">${escapedContent}</pre>`
+            }
+          </div>
+        </article>
+      `;
+
+      bindEditorEvents(node);
+    }
+
+    function renderDetail() {
+      const node = findNodeById(skillTree, selectedNodeId);
+      if (!node) {
+        detailPanel.innerHTML = `<div class="empty-state">未找到当前节点，请重新选择目录树中的对象。</div>`;
+        return;
+      }
+
+      if (node.kind === "folder") {
+        renderFolderDetail(node);
+        return;
+      }
+
+      renderFileDetail(node);
+    }
+
+    function expandAllFolders(node) {
+      if (node.kind !== "folder") {
+        return;
+      }
+      expandedNodes.add(node.id);
+      (node.children || []).forEach(expandAllFolders);
+    }
+
+    function collapseAllFolders(node, keepId) {
+      if (node.kind !== "folder") {
+        return;
+      }
+      if (node.id !== keepId) {
+        expandedNodes.delete(node.id);
+      }
+      (node.children || []).forEach((child) => collapseAllFolders(child, keepId));
+    }
+
+    isSidebarExpanded = false;
+
+    sidebarToggleButton.addEventListener("click", toggleSidebar);
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeSidebar();
+      }
+    });
+
+    syncSidebarState();
+    expandAllFolders(skillTree);
+    ensureSelectedExpanded();
+    renderTree();
+    renderDetail();
+
+    expandAllButton.addEventListener("click", () => {
+      expandAllFolders(skillTree);
+      renderTree();
+    });
+
+    collapseAllButton.addEventListener("click", () => {
+      collapseAllFolders(skillTree, skillTree.id);
+      expandedNodes.add(skillTree.id);
+      selectedNodeId = skillTree.id;
+      renderTree();
+      renderDetail();
+    });
+  </script>
+</body>
+</html>

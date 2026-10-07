@@ -1,0 +1,28 @@
+[project]
+name = "ai-prd-backend"
+version = "0.1.0"
+description = "FastAPI backend for ai-prd"
+requires-python = ">=3.11"
+dependencies = [
+  "click>=8.1,<9.0",
+  "claude-agent-sdk>=0.1,<1.0",
+  "fastapi>=0.115,<1.0",
+  "httpx>=0.28,<1.0",
+  "markdown>=3.6,<4.0",
+  "pydantic-settings>=2.7,<3.0",
+  "python-dotenv>=1.0,<2.0",
+  "requests>=2.32,<3.0",
+  "uvicorn[standard]>=0.32,<1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<9.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+"app.business.code_reviews" = ["default_review_policy.md"]
