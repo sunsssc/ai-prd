@@ -14,13 +14,13 @@ An earlier tool generated business docs from code, but PMs could not use the out
 
 ## What runs on its own
 
-Four of the five agents start without a person: GitHub, ClickUp, code changes and other internal services trigger them.
+Four of the five agents start without a person: a GitHub poll, hourly ClickUp and code syncs, and signed requests from other internal services start them.
 
 | Agent | Trigger | What it does | Output | Human step |
 | --- | --- | --- | --- | --- |
 | PR review | GitHub poll every 5 min; first review request on a non-draft PR | Reviews the PR in its own git worktree, against the linked ClickUp requirement and a review policy | Report emailed to the PR author | Author decides what to fix |
 | Requirement review | Hourly ClickUp sync; trivial edits skipped | Checks the changed spec with a requirement-check Skill | Review file with an unread badge | PM reads it; posting back to ClickUp is off by default |
-| Business-doc update | After each hourly code sync | A generator proposes edits; an independent reviewer checks them | Git commit when the gate passes | Otherwise a human queue to apply or ignore |
+| Business-doc update | After an hourly code sync brings new commits | A generator proposes edits; an independent reviewer checks them | Git commit when the gate passes | Otherwise a human queue to apply or ignore |
 | Security scan | A signed request from another internal service | Checks a file, folder or URL read-only, treating its content as untrusted | JSON verdict (safe or unsafe) with evidence | The calling service decides what to do |
 | Assistant | A person's question | Answers from company knowledge, Skills and tools | Streamed answer with a citation trace | Stop, rerun, approve tool calls |
 

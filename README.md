@@ -12,7 +12,7 @@ For the problem, design decisions and results, read the [case study](CASE_STUDY.
 | --- | --- | --- | --- |
 | PR review | GitHub poll every 5 minutes; first review request on a non-draft PR | Reviews the PR in its own git worktree, against the linked ClickUp requirement and a review policy | Report emailed to the PR author |
 | Requirement review | Hourly ClickUp sync; trivial edits skipped | Checks the changed spec with a requirement-check Skill | Review file with an unread badge |
-| Business-doc update | After each hourly code sync | A generator agent proposes doc edits; a separate reviewer agent checks them | Git commit when the gate passes, otherwise a human queue |
+| Business-doc update | After an hourly code sync brings new commits | A generator agent proposes doc edits; a separate reviewer agent checks them | Git commit when the gate passes, otherwise a human queue |
 | Security scan | A signed request from another internal service | Checks a file, folder or URL read-only, treating its content as untrusted | JSON verdict (safe or unsafe) with evidence |
 | Assistant | A person's question | Answers from company knowledge, Skills and tools | Streamed answer with a citation trace |
 
