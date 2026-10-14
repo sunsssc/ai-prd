@@ -1,0 +1,27 @@
+{
+  "name": "ai-prd-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "umask 022 && vite build",
+    "test": "node --test src/utils/*.test.js",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "doco-text-editor": "^0.1.0",
+    "mermaid": "^11.12.0",
+    "plantuml-encoder": "^1.4.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^10.1.0",
+    "react-syntax-highlighter": "^16.1.1",
+    "rehype-raw": "^7.0.0",
+    "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.10"
+  }
+}

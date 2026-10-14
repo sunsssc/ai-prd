@@ -1,0 +1,693 @@
+{
+  "model": "gpt-5.6-terra",
+  "effort": "high",
+  "qa": {
+    "agent": {
+      "numerator": 19,
+      "denominator": 20,
+      "rate": 0.95
+    },
+    "baseline": {
+      "numerator": 20,
+      "denominator": 20,
+      "rate": 1.0
+    }
+  },
+  "pr_summary": {
+    "agent": {
+      "findings": {
+        "valid": 17,
+        "invalid": 5,
+        "unresolved": 4
+      },
+      "known_hits": 11,
+      "known_total": 13,
+      "total_tokens": 3364858,
+      "median_seconds": 174.86
+    },
+    "baseline": {
+      "findings": {
+        "valid": 19,
+        "invalid": 3,
+        "unresolved": 3
+      },
+      "known_hits": 11,
+      "known_total": 13,
+      "total_tokens": 1584729,
+      "median_seconds": 60.53
+    },
+    "two_stage": {
+      "findings": {
+        "valid": 20,
+        "invalid": 2,
+        "unresolved": 2
+      },
+      "known_hits": 11,
+      "known_total": 13,
+      "total_tokens": 10131651,
+      "median_seconds": 605.065
+    }
+  },
+  "pr_cases": [
+    {
+      "case": "pr-01",
+      "family": "family-01",
+      "source_type": "real_historical_commit",
+      "known_total": 0,
+      "agent": {
+        "findings": {
+          "valid": 0,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "baseline": {
+        "findings": {
+          "valid": 0,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 0,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0,
+        "seconds": 515.34,
+        "total_tokens": 292166
+      }
+    },
+    {
+      "case": "pr-02",
+      "family": "family-01",
+      "source_type": "reverse_historical_fix_reconstruction",
+      "known_total": 1,
+      "agent": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1
+      },
+      "baseline": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1,
+        "seconds": 511.5,
+        "total_tokens": 280313
+      }
+    },
+    {
+      "case": "pr-03",
+      "family": "family-07",
+      "source_type": "real_historical_commit",
+      "known_total": 0,
+      "agent": {
+        "findings": {
+          "valid": 0,
+          "invalid": 1,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "baseline": {
+        "findings": {
+          "valid": 0,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 0,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0,
+        "seconds": 589.82,
+        "total_tokens": 266897
+      }
+    },
+    {
+      "case": "pr-04",
+      "family": "family-07",
+      "source_type": "reverse_historical_fix_reconstruction",
+      "known_total": 1,
+      "agent": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1
+      },
+      "baseline": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1,
+        "seconds": 437.65,
+        "total_tokens": 217017
+      }
+    },
+    {
+      "case": "pr-05",
+      "family": "family-02",
+      "source_type": "real_historical_commit",
+      "known_total": 0,
+      "agent": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "baseline": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0,
+        "seconds": 629.63,
+        "total_tokens": 343550
+      }
+    },
+    {
+      "case": "pr-06",
+      "family": "family-02",
+      "source_type": "reverse_historical_fix_reconstruction",
+      "known_total": 1,
+      "agent": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1
+      },
+      "baseline": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1,
+        "seconds": 676.18,
+        "total_tokens": 343647
+      }
+    },
+    {
+      "case": "pr-07",
+      "family": "family-09",
+      "source_type": "real_historical_commit",
+      "known_total": 0,
+      "agent": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "baseline": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0,
+        "seconds": 587.42,
+        "total_tokens": 318478
+      }
+    },
+    {
+      "case": "pr-08",
+      "family": "family-09",
+      "source_type": "reverse_historical_fix_reconstruction",
+      "known_total": 1,
+      "agent": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1
+      },
+      "baseline": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1,
+        "seconds": 565.34,
+        "total_tokens": 518762
+      }
+    },
+    {
+      "case": "pr-09",
+      "family": "family-03",
+      "source_type": "real_historical_commit",
+      "known_total": 0,
+      "agent": {
+        "findings": {
+          "valid": 0,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "baseline": {
+        "findings": {
+          "valid": 0,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 0,
+          "invalid": 1,
+          "unresolved": 0
+        },
+        "known_hits": 0,
+        "seconds": 740.29,
+        "total_tokens": 852719
+      }
+    },
+    {
+      "case": "pr-10",
+      "family": "family-03",
+      "source_type": "reverse_historical_fix_reconstruction",
+      "known_total": 2,
+      "agent": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 1
+        },
+        "known_hits": 1
+      },
+      "baseline": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1,
+        "seconds": 668.2,
+        "total_tokens": 947857
+      }
+    },
+    {
+      "case": "pr-11",
+      "family": "family-06",
+      "source_type": "real_historical_commit",
+      "known_total": 0,
+      "agent": {
+        "findings": {
+          "valid": 0,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "baseline": {
+        "findings": {
+          "valid": 0,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 0,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0,
+        "seconds": 465.68,
+        "total_tokens": 332635
+      }
+    },
+    {
+      "case": "pr-12",
+      "family": "family-06",
+      "source_type": "reverse_historical_fix_reconstruction",
+      "known_total": 1,
+      "agent": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1
+      },
+      "baseline": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 1
+        },
+        "known_hits": 1
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1,
+        "seconds": 421.79,
+        "total_tokens": 346206
+      }
+    },
+    {
+      "case": "pr-13",
+      "family": "family-08",
+      "source_type": "real_historical_commit",
+      "known_total": 0,
+      "agent": {
+        "findings": {
+          "valid": 0,
+          "invalid": 2,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "baseline": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0,
+        "seconds": 661.71,
+        "total_tokens": 666433
+      }
+    },
+    {
+      "case": "pr-14",
+      "family": "family-08",
+      "source_type": "reverse_historical_fix_reconstruction",
+      "known_total": 1,
+      "agent": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "baseline": {
+        "findings": {
+          "valid": 1,
+          "invalid": 1,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 2,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0,
+        "seconds": 627.41,
+        "total_tokens": 691680
+      }
+    },
+    {
+      "case": "pr-15",
+      "family": "family-04",
+      "source_type": "real_historical_commit",
+      "known_total": 0,
+      "agent": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "baseline": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0,
+        "seconds": 704.02,
+        "total_tokens": 392731
+      }
+    },
+    {
+      "case": "pr-16",
+      "family": "family-04",
+      "source_type": "reverse_historical_fix_reconstruction",
+      "known_total": 1,
+      "agent": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1
+      },
+      "baseline": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 1,
+        "seconds": 627.45,
+        "total_tokens": 411482
+      }
+    },
+    {
+      "case": "pr-17",
+      "family": "family-09",
+      "source_type": "real_historical_commit",
+      "known_total": 0,
+      "agent": {
+        "findings": {
+          "valid": 0,
+          "invalid": 1,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "baseline": {
+        "findings": {
+          "valid": 0,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 0,
+          "invalid": 1,
+          "unresolved": 0
+        },
+        "known_hits": 0,
+        "seconds": 515.21,
+        "total_tokens": 869649
+      }
+    },
+    {
+      "case": "pr-18",
+      "family": "family-09",
+      "source_type": "reverse_historical_fix_reconstruction",
+      "known_total": 3,
+      "agent": {
+        "findings": {
+          "valid": 4,
+          "invalid": 0,
+          "unresolved": 2
+        },
+        "known_hits": 3
+      },
+      "baseline": {
+        "findings": {
+          "valid": 4,
+          "invalid": 0,
+          "unresolved": 1
+        },
+        "known_hits": 3
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 4,
+          "invalid": 0,
+          "unresolved": 1
+        },
+        "known_hits": 3,
+        "seconds": 698.22,
+        "total_tokens": 759089
+      }
+    },
+    {
+      "case": "pr-19",
+      "family": "family-05",
+      "source_type": "real_historical_commit",
+      "known_total": 0,
+      "agent": {
+        "findings": {
+          "valid": 0,
+          "invalid": 1,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "baseline": {
+        "findings": {
+          "valid": 1,
+          "invalid": 2,
+          "unresolved": 0
+        },
+        "known_hits": 0
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 1,
+          "invalid": 0,
+          "unresolved": 0
+        },
+        "known_hits": 0,
+        "seconds": 612.01,
+        "total_tokens": 817983
+      }
+    },
+    {
+      "case": "pr-20",
+      "family": "family-05",
+      "source_type": "reverse_historical_fix_reconstruction",
+      "known_total": 1,
+      "agent": {
+        "findings": {
+          "valid": 2,
+          "invalid": 0,
+          "unresolved": 1
+        },
+        "known_hits": 1
+      },
+      "baseline": {
+        "findings": {
+          "valid": 2,
+          "invalid": 0,
+          "unresolved": 1
+        },
+        "known_hits": 1
+      },
+      "two_stage": {
+        "findings": {
+          "valid": 2,
+          "invalid": 0,
+          "unresolved": 1
+        },
+        "known_hits": 1,
+        "seconds": 598.12,
+        "total_tokens": 462357
+      }
+    }
+  ]
+}
